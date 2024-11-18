@@ -1,0 +1,10 @@
+
+Experiment ID: 36
+Experiment: pre_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 2, 'T': 100, 'd': 2, 'mean': [50, 50], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x16086e1f0>, 'bandwidth': 6, 'kernel': <functions.kernels.gaussian_kernel.GaussianKernel object at 0x1610c7130>, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x1610c7ca0>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-11-18 18:12:32
+Python File: experiment_run.py
+Comment: Experiment based on pre_config.json
+---------------------------------

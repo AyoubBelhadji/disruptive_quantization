@@ -1,0 +1,10 @@
+
+Experiment ID: 8
+Experiment: MMS
+Category: validated
+Algorithm: MultipleMeanShift
+Parameters: {'noise_level': 0.3}
+Timestamp: 2024-11-08 14:00:41
+Python File: experiment_run.py
+Comment: Noise level 0.3 applied
+---------------------------------

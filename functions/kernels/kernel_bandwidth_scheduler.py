@@ -20,8 +20,9 @@ def KernelBandwidthScheduleFactory(kernel_info, function_map):
     if schedule_function is None:
         return ConstantKernelBandwidth(kernel_params, kernel_class)
 
-    kernel_schedule_constructor = function_map[schedule_function.get("bandwidth_schedule_name")]
-    return kernel_schedule_constructor(kernel_params, kernel_class)
+    kernel_schedule_constructor = function_map[schedule_function.get("bandwidth_schedule_function_name")]
+    schedule_params = schedule_function.get("params")
+    return kernel_schedule_constructor(schedule_params, kernel_class)
 
 class KernelBandwidthScheduler(ABC):
     """
@@ -51,6 +52,7 @@ class KernelBandwidthScheduler(ABC):
     @abstractmethod
     def get_bandwidth(self):
         """ Returns the bandwidth for the current iteration """
+        assert False
         pass
 
 

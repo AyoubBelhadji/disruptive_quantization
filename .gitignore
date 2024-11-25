@@ -1,0 +1,6 @@
+__pycache__/**
+*.pdf
+*.gif
+*.npy
+*.pkl
+.DS_Store

@@ -11,9 +11,3 @@
 36,experiments/sandbox/pre_config_36_20241118_181232
 37,experiments/sandbox/pre_config_37_20241118_181948
 38,experiments/sandbox/pre_config_38_20241118_183406
-39,experiments/sandbox/pre_config_39_20241124_153243
-40,experiments/sandbox/pre_config_40_20241124_153333
-41,experiments/sandbox/pre_config_41_20241125_155701
-42,experiments/sandbox/pre_config_42_20241125_160156
-43,experiments/sandbox/pre_config_43_20241125_160300
-44,experiments/sandbox/pre_config_44_20241125_160343

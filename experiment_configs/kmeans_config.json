@@ -10,7 +10,7 @@
             "T": 100
         },
         "initial_distribution": {
-            "distribution_name": "data_distribution",
+            "distribution_name": "kmeans++",
             "params": {}
         },
         "experience": {

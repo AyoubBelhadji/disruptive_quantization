@@ -21,6 +21,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 from functions.kernels.gaussian_kernel import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
+from functions.initial_distributions.kmeanspp_distribution import *
 from functions.noise_generators.gaussian_sqrt_noise import *
 from tools.files_tools import *
 from tools.visualization_tools import *
@@ -32,7 +33,8 @@ function_map = {
     "gaussian_distribution": GaussianDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
-    "data_distribution": DataDistribution
+    "data_distribution": DataDistribution,
+    "kmeans++": KmeansPlusPlusDistribution
 }
 
 # Load available algorithms

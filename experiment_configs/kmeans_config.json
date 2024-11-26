@@ -1,0 +1,20 @@
+{
+    "algorithm_name": "KmeansClustering",
+    "params": {
+        "solution": {
+            "K": 3,
+            "freeze_init": 1
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {}
+        },
+        "experience": {
+            "R": 2
+        },
+        "dataset": {
+            "dataset_name": "gmm_data",
+            "N": 1000
+        }
+    }
+}

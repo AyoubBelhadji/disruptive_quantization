@@ -7,14 +7,10 @@ Also also created on Mon Nov 18 6:22:10 2024
 @author: ayoubbelhadji
 """
 
-
-
 import json
 import os
 import pickle
 
-
-    
 def create_folder_if_needed(folder_path):
     """
     Check if a folder exists, and create it if it doesn't.
@@ -27,9 +23,7 @@ def create_folder_if_needed(folder_path):
         print(f"Folder created: {folder_path}")
     else:
         print(f"Folder already exists: {folder_path}")
-        
-        
-        
+
 
 class DataLoader:
     def __init__(self, datasets_folder='datasets'):
@@ -80,24 +74,12 @@ class DataLoader:
             raise ValueError(f"Error loading dataset '{dataset_name}': {e}")
 
 
-
-
-
-# # Function to load a JSON configuration
-# def load_config(config_file):
-#     with open(config_file, 'r') as f:
-#         return json.load(f)
-
-
-
-
 def load_config(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Configuration file not found: {file_path}")
     with open(file_path, 'r') as f:
         config = json.load(f)
     return config
-
 
 
 def categorize_params(config, function_map):
@@ -121,56 +103,39 @@ def categorize_params(config, function_map):
     initial_distribution_name = initial_distribution_info.get('distribution_name')
     initial_distribution_class = function_map[initial_distribution_name]
     intial_distribution_params = initial_distribution_info.get('params', {})
-    params.update(intial_distribution_params)  # Add 'bandwidth' directly to params
-    
+    params.update(intial_distribution_params)
+
     params['initial_distribution'] = initial_distribution_class(intial_distribution_params)
 
-
-
+    # Process and flatten kernel parameters directly
     kernel_info = config['params'].get('kernel', {})
-    kernel_name = kernel_info.get('kernel_name')
-    kernel_class = function_map[kernel_name]
-    kernel_params = kernel_info.get("params", {})
-    params.update(kernel_params)  # Add 'bandwidth' directly to params
-    
-    params['kernel'] = kernel_class(kernel_params)
+    if len(kernel_info) > 0:
+        kernel_name = kernel_info.get('kernel_name')
+        kernel_class = function_map[kernel_name]
+        kernel_params = kernel_info.get("params", {})
+        params.update(kernel_params)  # Add 'bandwidth' directly to params
 
-
-
-
+        params['kernel'] = kernel_class(kernel_params)
 
     # Parse noise_schedule_functions_list as a list of function names without parameters
     noise_schedule_function_info = optimization_params.get('noise_schedule_function', {})
-    noise_schedule_function_name = noise_schedule_function_info.get('noise_schedule_function_name')
-    noise_schedule_function_class = function_map[noise_schedule_function_name]
-    noise_schedule_function_params = initial_distribution_info.get('params', {})
-    
+    if len(noise_schedule_function_info) > 0:
+        noise_schedule_function_name = noise_schedule_function_info.get('noise_schedule_function_name')
+        noise_schedule_function_class = function_map[noise_schedule_function_name]
+        noise_schedule_function_params = initial_distribution_info.get('params', {})
+        params.update(noise_schedule_function_params)
 
-    params['noise_schedule_function'] = noise_schedule_function_class(noise_schedule_function_params)
-    
-    params.update(noise_schedule_function_params)
-    
+        params['noise_schedule_function'] = noise_schedule_function_class(noise_schedule_function_params)
 
     # Process and flatten domain parameters directly
     domain_info = config['params'].get('domain', {})
-    domain_params = domain_info.get("params", {})
-    params.update(domain_params)  # Add 'd', 'a', 'b' directly to params
+    if len(domain_info) > 0:
+        domain_params = domain_info.get("params", {})
+        params.update(domain_params)  # Add 'd', 'a', 'b' directly to params
 
-    # Process and flatten kernel parameters directly
-
-    kernel_info = config['params'].get('kernel', {})
-    kernel_name = kernel_info.get('kernel_name')
-    kernel_class = function_map[kernel_name]
-    kernel_params = kernel_info.get("params", {})
-    params.update(kernel_params)  # Add 'bandwidth' directly to params
-
-    params['kernel'] = kernel_class(kernel_params)
-    #print(kernel_class)
-    
     # Dataset parameters
     dataset_params = config['params'].get('dataset', {})
     params.update(dataset_params)
-    #params["T"] = optimization_params.get("T", None)
 
     return params
 

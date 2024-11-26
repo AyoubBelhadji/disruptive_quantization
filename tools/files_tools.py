@@ -7,7 +7,6 @@ Also also created on Mon Nov 18 6:22:10 2024
 @author: ayoubbelhadji
 """
 
-
 import json
 import os
 import pickle
@@ -80,12 +79,6 @@ class DataLoader:
             raise ValueError(f"Error loading dataset '{dataset_name}': {e}")
 
 
-# # Function to load a JSON configuration
-# def load_config(config_file):
-#     with open(config_file, 'r') as f:
-#         return json.load(f)
-
-
 def load_config(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Configuration file not found: {file_path}")
@@ -125,33 +118,32 @@ def categorize_params(config, function_map):
         intial_distribution_params)
 
     kernel_info = config['params'].get('kernel', {})
-    params['kernel'] = KernelBandwidthScheduleFactory(kernel_info, function_map)
-
+    if len(kernel_info) > 0:
+        params['kernel'] = KernelBandwidthScheduleFactory(
+            kernel_info, function_map)
 
     # Parse noise_schedule_functions_list as a list of function names without parameters
     noise_schedule_function_info = optimization_params.get(
         'noise_schedule_function', {})
-    noise_schedule_function_name = noise_schedule_function_info.get(
-        'noise_schedule_function_name')
-    noise_schedule_function_class = function_map[noise_schedule_function_name]
-    noise_schedule_function_params = initial_distribution_info.get(
-        'params', {})
+    if len(noise_schedule_function_info) > 0:
+        noise_schedule_function_name = noise_schedule_function_info.get(
+            'noise_schedule_function_name')
+        noise_schedule_function_class = function_map[noise_schedule_function_name]
+        noise_schedule_function_params = initial_distribution_info.get(
+            'params', {})
+        params.update(noise_schedule_function_params)
 
-    params['noise_schedule_function'] = noise_schedule_function_class(
-        noise_schedule_function_params)
-
-    params.update(noise_schedule_function_params)
+        params['noise_schedule_function'] = noise_schedule_function_class(
+            noise_schedule_function_params)
 
     # Process and flatten domain parameters directly
     domain_info = config['params'].get('domain', {})
-    domain_params = domain_info.get("params", {})
-    params.update(domain_params)  # Add 'd', 'a', 'b' directly to params
-
-    # Process and flatten kernel parameters directly
+    if len(domain_info) > 0:
+        domain_params = domain_info.get("params", {})
+        params.update(domain_params)  # Add 'd', 'a', 'b' directly to params
 
     # Dataset parameters
     dataset_params = config['params'].get('dataset', {})
     params.update(dataset_params)
-    # params["T"] = optimization_params.get("T", None)
 
     return params

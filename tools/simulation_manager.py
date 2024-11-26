@@ -127,7 +127,7 @@ def get_available_algorithms(directory='algorithms'):
                     full_module_name = f"{directory}.{module_name}"
                 else:
                     full_module_name = f"{directory}.{relative_path}.{module_name}"
-
+                print(f'{file}, {module_name}, {relative_path}, {full_module_name}')
                 # Import the module
                 try:
                     module = importlib.import_module(full_module_name)

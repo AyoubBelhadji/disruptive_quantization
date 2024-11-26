@@ -9,20 +9,14 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import numpy as np
 
-
-
-
 class GaussianKernel:
-    def __init__(self, params):
-        self.sigma = params.get("bandwidth")
+    def __init__(self, bandwidth):
+        self.sigma = bandwidth
         self.kernel = self.Gaussian_kernel(self.sigma)
         self.pre_kernel = self.quadratic_function(self.sigma)
-    
+
     def Gaussian_kernel(self, sigma):
         def kernel_aux(x, y):
-            #print(x)
-            #print('x')
-            #print(y)
             log_output = -((np.linalg.norm(x - y)) ** 2) / (2 * (sigma ** 2))
             return np.exp(log_output)
         return kernel_aux

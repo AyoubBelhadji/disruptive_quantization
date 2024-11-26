@@ -4,3 +4,6 @@
 *.npy
 *.pkl
 .DS_Store
+experiments/sandbox/**
+experiments/*.txt
+! **/.keep

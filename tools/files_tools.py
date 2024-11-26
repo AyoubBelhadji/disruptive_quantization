@@ -10,6 +10,8 @@ Also also created on Mon Nov 18 6:22:10 2024
 import json
 import os
 import pickle
+from functions.kernels.kernel_bandwidth_scheduler import KernelBandwidthScheduleFactory
+
 
 def create_folder_if_needed(folder_path):
     """
@@ -54,7 +56,8 @@ class DataLoader:
         """
         dataset_path = os.path.join(self.datasets_folder, dataset_name)
         if not os.path.exists(dataset_path):
-            raise FileNotFoundError(f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
+            raise FileNotFoundError(
+                f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
 
         try:
             with open(dataset_path, 'rb') as f:
@@ -63,11 +66,13 @@ class DataLoader:
                 # Ensure the dataset is a dictionary with the expected keys
                 required_keys = {'data', 'labels', 'params'}
                 if not isinstance(data_dict, dict) or not required_keys.issubset(data_dict.keys()):
-                    raise ValueError(f"Dataset '{dataset_name}' does not have the required structure.")
+                    raise ValueError(
+                        f"Dataset '{dataset_name}' does not have the required structure.")
 
                 # Extract the requested component
                 if component not in data_dict:
-                    raise KeyError(f"Component '{component}' not found in the dataset.")
+                    raise KeyError(
+                        f"Component '{component}' not found in the dataset.")
                 return data_dict[component]
 
         except Exception as e:
@@ -99,33 +104,37 @@ def categorize_params(config, function_map):
     params["T"] = optimization_params.get("T", None)
 
     # Process and flatten intial distribution parameters directly
-    initial_distribution_info = config['params'].get('initial_distribution', {})
-    initial_distribution_name = initial_distribution_info.get('distribution_name')
+    initial_distribution_info = config['params'].get(
+        'initial_distribution', {})
+    initial_distribution_name = initial_distribution_info.get(
+        'distribution_name')
     initial_distribution_class = function_map[initial_distribution_name]
     intial_distribution_params = initial_distribution_info.get('params', {})
+
+    # Add 'bandwidth' directly to params
     params.update(intial_distribution_params)
 
-    params['initial_distribution'] = initial_distribution_class(intial_distribution_params)
+    params['initial_distribution'] = initial_distribution_class(
+        intial_distribution_params)
 
-    # Process and flatten kernel parameters directly
     kernel_info = config['params'].get('kernel', {})
     if len(kernel_info) > 0:
-        kernel_name = kernel_info.get('kernel_name')
-        kernel_class = function_map[kernel_name]
-        kernel_params = kernel_info.get("params", {})
-        params.update(kernel_params)  # Add 'bandwidth' directly to params
-
-        params['kernel'] = kernel_class(kernel_params)
+        params['kernel'] = KernelBandwidthScheduleFactory(
+            kernel_info, function_map)
 
     # Parse noise_schedule_functions_list as a list of function names without parameters
-    noise_schedule_function_info = optimization_params.get('noise_schedule_function', {})
+    noise_schedule_function_info = optimization_params.get(
+        'noise_schedule_function', {})
     if len(noise_schedule_function_info) > 0:
-        noise_schedule_function_name = noise_schedule_function_info.get('noise_schedule_function_name')
+        noise_schedule_function_name = noise_schedule_function_info.get(
+            'noise_schedule_function_name')
         noise_schedule_function_class = function_map[noise_schedule_function_name]
-        noise_schedule_function_params = initial_distribution_info.get('params', {})
+        noise_schedule_function_params = initial_distribution_info.get(
+            'params', {})
         params.update(noise_schedule_function_params)
 
-        params['noise_schedule_function'] = noise_schedule_function_class(noise_schedule_function_params)
+        params['noise_schedule_function'] = noise_schedule_function_class(
+            noise_schedule_function_params)
 
     # Process and flatten domain parameters directly
     domain_info = config['params'].get('domain', {})
@@ -138,4 +147,3 @@ def categorize_params(config, function_map):
     params.update(dataset_params)
 
     return params
-

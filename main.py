@@ -19,6 +19,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 # from algorithms.IKBQ.
 
 from functions.kernels.gaussian_kernel import *
+from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
 from functions.initial_distributions.kmeanspp_distribution import *
@@ -34,7 +35,9 @@ function_map = {
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
     "data_distribution": DataDistribution,
-    "kmeans++": KmeansPlusPlusDistribution
+    "kmeans++": KmeansPlusPlusDistribution,
+    "constant_kernel_bandwidth": ConstantKernelBandwidth,
+    "exponential_decay_kernel_bandwidth": ExponentialDecayKernelBandwidth
 }
 
 # Load available algorithms

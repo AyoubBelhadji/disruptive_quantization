@@ -21,6 +21,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 #from algorithms.IKBQ.
 
 from functions.kernels.gaussian_kernel import *
+from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.noise_generators.gaussian_sqrt_noise import *
 from tools.files_tools import *
@@ -33,7 +34,9 @@ from tools.simulation_manager import *
 function_map = {
     "gaussian_distribution": GaussianDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
-    "gaussian_kernel": GaussianKernel
+    "gaussian_kernel": GaussianKernel,
+    "constant_kernel_bandwidth": ConstantKernelBandwidth,
+    "exponential_decay_kernel_bandwidth": ExponentialDecayKernelBandwidth
 }
 
 

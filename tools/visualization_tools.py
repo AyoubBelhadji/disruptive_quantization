@@ -18,7 +18,7 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array)
     R,T,M,d = c_array_trajectory.shape
     animations = []  # To store animations for each repetition
     
-    for r in list(range(R)):
+    for r in range(R):
         fig, ax = plt.subplots()
     
         # def update(frame, current_R):

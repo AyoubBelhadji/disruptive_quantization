@@ -37,7 +37,14 @@
         "kernel": {
             "kernel_name": "gaussian_kernel",
             "params": {
-                "bandwidth": 6
+                "bandwidth_schedule_function": {
+                    "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
+                    "params": {
+                        "decay_rate": -0.05,
+                        "start_value": 6,
+                        "end_value": 0.1
+                    }
+                }
             }
         },
         "dataset": {

@@ -48,6 +48,9 @@ class KernelBandwidthScheduler(ABC):
     def GetPreKernel(self):
         return self.kernel_inst.pre_kernel
 
+    def GetKernelGrad2(self):
+        return self.kernel_inst.kernel_grad2
+
     # Abstract methods
     @abstractmethod
     def get_bandwidth(self):

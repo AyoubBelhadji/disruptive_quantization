@@ -65,9 +65,9 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
 
             for t in tqdm(range(self.T - 1), position=0):
                 self.c_array_trajectory[r, t+1, :, :] = self.calculate_centroids(
-                    self.c_array_trajectory[r, t, :, :], t)
+                    self.c_array_trajectory[r, t, :, :], t, self.w_array_trajectory[r, t, :])
                 self.w_array_trajectory[r, t+1, :] = self.calculate_weights(
-                    self.c_array_trajectory[r, t, :, :])
+                    self.c_array_trajectory[r, t, :, :], t, self.w_array_trajectory[r, t, :])
 
         self.log(f"TODO")
 

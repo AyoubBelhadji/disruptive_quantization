@@ -3,4 +3,5 @@ __pycache__/**
 *.gif
 *.npy
 *.pkl
+*.pyc
 .DS_Store

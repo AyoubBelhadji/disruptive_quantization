@@ -5,5 +5,5 @@ class DataDistribution():
         self.params = params
 
     def generate_samples(self, M, data):
-        perm = np.random.permutation(self.N)
+        perm = np.random.permutation(data.shape[0])
         return data[perm[:M]]

@@ -62,6 +62,9 @@ if __name__ == "__main__":
             algorithm_name = config['algorithm_name']
             params = categorize_params(config, function_map)
 
+            # Check if debugging
+            debug = config.get('debug', False)
+
             # Initialize the data loader
             data_loader = DataLoader(datasets_folder='datasets')
 
@@ -106,4 +109,6 @@ if __name__ == "__main__":
             except ValueError as e:
                 print(
                     f"Error running {algorithm_name} for {config_filename}: {e}")
+                if debug:
+                    raise e
                 continue

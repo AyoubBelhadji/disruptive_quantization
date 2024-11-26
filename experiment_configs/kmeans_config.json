@@ -1,9 +1,13 @@
 {
+    "debug": 1,
     "algorithm_name": "KmeansClustering",
     "params": {
         "solution": {
             "K": 3,
-            "freeze_init": 1
+            "freeze_init": 0
+        },
+        "optimization": {
+            "T": 100
         },
         "initial_distribution": {
             "distribution_name": "data_distribution",
@@ -14,7 +18,8 @@
         },
         "dataset": {
             "dataset_name": "gmm_data",
-            "N": 1000
+            "N": 1000,
+            "d": 2
         }
     }
 }

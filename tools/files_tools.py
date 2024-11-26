@@ -55,11 +55,11 @@ class DataLoader:
         dataset_path = os.path.join(self.datasets_folder, dataset_name)
         if not os.path.exists(dataset_path):
             raise FileNotFoundError(f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
-        
+
         try:
             with open(dataset_path, 'rb') as f:
                 data_dict = pickle.load(f)
-                
+
                 # Ensure the dataset is a dictionary with the expected keys
                 required_keys = {'data', 'labels', 'params'}
                 if not isinstance(data_dict, dict) or not required_keys.issubset(data_dict.keys()):

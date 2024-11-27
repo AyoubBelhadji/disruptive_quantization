@@ -155,7 +155,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         self.use_projection = params.get('use_projection')
         self.reg_K = 0.0001
 
-    def calculate_weights(self, c_array, w_array):
+    def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
 
         # Be careful because K means kernel matrix and number of centroids

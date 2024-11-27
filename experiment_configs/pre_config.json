@@ -40,9 +40,9 @@
                 "bandwidth_schedule_function": {
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
-                        "decay_rate": -0.05,
-                        "start_value": 6,
-                        "end_value": 0.1
+                        "bandwidth_decay_rate": -0.05,
+                        "bandwidth_start_value": 6,
+                        "bandwidth_end_value": 0.1
                     }
                 }
             }

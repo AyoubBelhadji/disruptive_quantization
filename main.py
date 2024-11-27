@@ -24,6 +24,7 @@ from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
 from functions.initial_distributions.kmeanspp_distribution import *
 from functions.noise_generators.gaussian_sqrt_noise import *
+from functions.time_parameterizations.time_parameterizations import *
 from tools.files_tools import *
 from tools.visualization_tools import *
 from tools.simulation_manager import *
@@ -37,12 +38,13 @@ function_map = {
     "data_distribution": DataDistribution,
     "kmeans++": KmeansPlusPlusDistribution,
     "constant_kernel_bandwidth": ConstantKernelBandwidth,
-    "exponential_decay_kernel_bandwidth": ExponentialDecayKernelBandwidth
+    "exponential_decay_kernel_bandwidth": ExponentialDecayKernelBandwidth,
+    "linear_time_parameterization": LinearTimeParameterization,
+    "logarithmic_time_parameterization": LogarithmicTimeParameterization
 }
 
 # Load available algorithms
 algorithms = get_available_algorithms()
-
 show_gif_visualization = True
 
 

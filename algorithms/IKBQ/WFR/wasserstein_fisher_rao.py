@@ -14,7 +14,8 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
 
     def __init__(self, params):
         super().__init__(params)
-        self.time_parameterization = params.get('time_parameterization')(T_)
+        self.time_parameterization = params.get('time_parameterization')
+        self.time_parameterization.SetLength(self.T)
 
         # Create workspaces for the centroids and weights
         # Front-facing workspaces
@@ -73,8 +74,8 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
         c_dot = self.cdot_workspace
         for i in range(self.K):
-            c_dot[i] = self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
-            c_dot[i,:] -= w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+            c_dot[i] = -self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
+            c_dot[i,:] += w_t.dot(self.kernel_grad2(c_t, c_t[i]))
 
     def WFR_ODE_weight_diff(self, c_t, w_t):
         w_dot = self.wdot_workspace

@@ -28,6 +28,8 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.N = params.get('N')
         self.data_array = None
         self.kernel_scheduler = params.get('kernel')
+        self.initial_distribution = params.get('initial_distribution')
+        self.freeze_init = params.get('freeze_init')
 
         self.domain = params.get('domain')
 
@@ -52,15 +54,15 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         if self.N != N_:
             raise ValueError("The shape of data_array doesn't correspond to N")
 
-        c_0_array = self.initial_distribution.generate_samples(self.K)
+        c_0_array = self.initial_distribution.generate_samples(self.K, self.data_array)
 
         for r in range(self.R):
             self.kernel_scheduler.IncrementSchedule()
             if self.freeze_init == True:
                 self.c_array_trajectory[r, 0, :, :] = c_0_array
             else:
-                self.c_array_trajectory[r, 0, :, :] = self.initial_distribution(
-                    self.K, self.d)
+                self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(
+                    self.K, self.data_array)
             self.w_array_trajectory[r, 0, :] = float(1/self.K)*np.ones(self.K)
 
             for t in tqdm(range(self.T - 1), position=0):

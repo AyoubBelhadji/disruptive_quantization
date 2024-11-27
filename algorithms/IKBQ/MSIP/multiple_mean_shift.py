@@ -151,9 +151,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
         self.reg_K = params.get('reg_K')
-        self.initial_distribution = params.get('initial_distribution')
         self.noise_schedule_function = params.get('noise_schedule_function')
-        self.freeze_init = params.get('freeze_init')
         self.use_projection = params.get('use_projection')
         self.reg_K = 0.0001
 

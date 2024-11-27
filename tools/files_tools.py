@@ -118,9 +118,11 @@ def categorize_params(config, function_map):
         intial_distribution_params)
 
     kernel_info = config['params'].get('kernel', {})
+    kernel_params = kernel_info.get('params', {})
     if len(kernel_info) > 0:
-        params['kernel'] = KernelBandwidthScheduleFactory(
-            kernel_info, function_map)
+        add_kernel_params, params['kernel'] = KernelBandwidthScheduleFactory(
+            kernel_info.get('kernel_name'), kernel_params, function_map)
+        params.update(add_kernel_params)
 
     # Parse noise_schedule_functions_list as a list of function names without parameters
     noise_schedule_function_info = optimization_params.get(
@@ -141,6 +143,17 @@ def categorize_params(config, function_map):
     if len(domain_info) > 0:
         domain_params = domain_info.get("params", {})
         params.update(domain_params)  # Add 'd', 'a', 'b' directly to params
+
+    # Process and flatten any time parameterization parameters directly
+    time_parameterization_info = config['params'].get('time_parameterization', {})
+    if len(time_parameterization_info) > 0:
+        time_parameterization_params = time_parameterization_info.get('params', {})
+        time_parameterization_name = time_parameterization_info.get('time_discretization_name')
+        time_parameterization_class = function_map[time_parameterization_name]
+        params.update(time_parameterization_params)
+
+        params['time_parameterization'] = time_parameterization_class(
+            time_parameterization_params)
 
     # Dataset parameters
     dataset_params = config['params'].get('dataset', {})

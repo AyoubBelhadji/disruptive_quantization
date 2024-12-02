@@ -8,21 +8,19 @@ Created on 11/22/2024 17:40:25
 from abc import ABC, abstractmethod
 import numpy as np
 
-def KernelBandwidthScheduleFactory(kernel_info, function_map):
+def KernelBandwidthScheduleFactory(kernel_name, kernel_params, function_map):
     """
     Factory method for creating kernel bandwidth scheduler objects.
     """
-    kernel_name = kernel_info.get('kernel_name')
     kernel_class = function_map[kernel_name]
-    kernel_params = kernel_info.get('params')
     schedule_function = kernel_params.get("bandwidth_schedule_function")
 
     if schedule_function is None:
-        return ConstantKernelBandwidth(kernel_params, kernel_class)
+        return kernel_params, ConstantKernelBandwidth(kernel_params, kernel_class)
 
     kernel_schedule_constructor = function_map[schedule_function.get("bandwidth_schedule_function_name")]
     schedule_params = schedule_function.get("params")
-    return kernel_schedule_constructor(schedule_params, kernel_class)
+    return schedule_params, kernel_schedule_constructor(schedule_params, kernel_class)
 
 class KernelBandwidthScheduler(ABC):
     """
@@ -47,6 +45,9 @@ class KernelBandwidthScheduler(ABC):
 
     def GetPreKernel(self):
         return self.kernel_inst.pre_kernel
+
+    def GetKernelGrad2(self):
+        return self.kernel_inst.kernel_grad2
 
     # Abstract methods
     @abstractmethod
@@ -77,10 +78,10 @@ class ExponentialDecayKernelBandwidth(KernelBandwidthScheduler):
     """
     def __init__(self, params, *args):
         super().__init__(params, *args)
-        self.decay_rate = params.get("decay_rate")
-        assert self.decay_rate < 0, "Decay rate must be strictly negative"
-        self.start_value = params.get("start_value")
-        self.end_value = params.get("end_value")
+        self.bandwidth_decay_rate = params.get("bandwidth_decay_rate")
+        assert self.bandwidth_decay_rate < 0, "Decay rate must be strictly negative"
+        self.bandwidth_start_value = params.get("bandwidth_start_value")
+        self.bandwidth_end_value = params.get("bandwidth_end_value")
 
     def get_bandwidth(self):
-        return self.end_value + (self.start_value - self.end_value) * np.exp(self.decay_rate * self.iter)
+        return self.bandwidth_end_value + (self.bandwidth_start_value - self.bandwidth_end_value) * np.exp(self.bandwidth_decay_rate * self.iter)

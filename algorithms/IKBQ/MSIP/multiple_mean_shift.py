@@ -15,8 +15,6 @@ import numpy as np
 
 
 # Adjugate matrix
-
-
 def cofactor_matrix(matrix):
     """
     Calculate the cofactor matrix of a given square matrix.
@@ -153,13 +151,11 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
         self.reg_K = params.get('reg_K')
-        self.initial_distribution = params.get('initial_distribution')
         self.noise_schedule_function = params.get('noise_schedule_function')
-        self.freeze_init = params.get('freeze_init')
         self.use_projection = params.get('use_projection')
         self.reg_K = 0.0001
 
-    def calculate_weights(self, c_array):
+    def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
 
         # Be careful because K means kernel matrix and number of centroids
@@ -187,7 +183,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         c_array_ni = self.noise_schedule_function.generate_noise(c_array, t)
         return c_array_ni
 
-    def calculate_centroids(self, c_array, t):
+    def calculate_centroids(self, c_array, t, w_array):
         x_array = self.data_array
 
         K_matrix = np.zeros((self.M, self.M))
@@ -229,6 +225,3 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
             return self.domain.project(c_tplus1_array_ni)
         else:
             return c_tplus1_array_ni
-
-    def run(self, data_array):
-        super().run(data_array)

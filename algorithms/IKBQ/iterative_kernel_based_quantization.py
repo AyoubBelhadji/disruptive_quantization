@@ -63,6 +63,7 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
             else:
                 self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(
                     self.K, self.data_array)
+
             self.w_array_trajectory[r, 0, :] = float(1/self.K)*np.ones(self.K)
 
             for t in tqdm(range(self.T - 1), position=0):

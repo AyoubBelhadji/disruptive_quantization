@@ -91,6 +91,10 @@ def categorize_params(config, function_map):
     """Flatten parameters from config into a single-level dictionary without text descriptions."""
     params = {}
 
+    # Load any constant hyperparameters
+    hyperparams = config['params'].get('hyperparams', {})
+    params.update(hyperparams)
+
     # Load solution parameters and add to params
     solution_params = config['params'].get('solution', {})
     params.update(solution_params)

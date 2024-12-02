@@ -15,22 +15,7 @@
             "R": 3
         },
         "optimization": {
-            "T": 100,
-            "noise_schedule_function": {
-                "noise_schedule_function_name": "gaussian_sqrt_noise",
-                "params": {
-                    "d": 2,
-                    "beta_ns": 2
-                }
-            }
-        },
-        "domain": {
-            "class": "hypercube",
-            "params": {
-                "d": 2,
-                "a": -25,
-                "b": 25
-            }
+            "T": 100
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",

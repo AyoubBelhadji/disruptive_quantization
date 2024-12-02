@@ -1,0 +1,42 @@
+{
+    "algorithm_name": "InteractionForceTransportFlow",
+    "params": {
+        "hyperparams": {
+            "centroid_step_size": 0.1,
+            "weight_step_size": 1e-3
+        },
+        "solution": {
+            "K": 3,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 2
+            }
+        },
+        "experience": {
+            "R": 3
+        },
+        "optimization": {
+            "T": 100
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth_schedule_function": {
+                    "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
+                    "params": {
+                        "bandwidth_decay_rate": -0.05,
+                        "bandwidth_start_value": 6,
+                        "bandwidth_end_value": 0.1
+                    }
+                }
+            }
+        },
+        "dataset": {
+            "dataset_name": "gmm_data",
+            "N": 1000
+        }
+    }
+}

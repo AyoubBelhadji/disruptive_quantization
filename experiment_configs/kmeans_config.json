@@ -1,5 +1,4 @@
 {
-    "debug": 1,
     "algorithm_name": "KmeansClustering",
     "params": {
         "solution": {

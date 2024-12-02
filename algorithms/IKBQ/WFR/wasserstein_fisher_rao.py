@@ -75,7 +75,7 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         c_dot = self.cdot_workspace
         for i in range(self.K):
             c_dot[i] = -self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
-            c_dot[i,:] += w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+            c_dot[i] += w_t.dot(self.kernel_grad2(c_t, c_t[i]))
 
     def WFR_ODE_weight_diff(self, c_t, w_t):
         w_dot = self.wdot_workspace

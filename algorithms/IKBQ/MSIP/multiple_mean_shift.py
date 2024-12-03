@@ -150,10 +150,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
-        self.reg_K = params.get('reg_K')
-        self.noise_schedule_function = params.get('noise_schedule_function')
-        self.use_projection = params.get('use_projection')
-        self.reg_K = 0.0001
+        self.reg_K = params.get('reg_K', 0.0001)
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
@@ -178,10 +175,6 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
             K_matrix+self.reg_K*np.eye(self.M)), mu_array)
 
         return weights_array
-
-    def inject_noise_centroids(self, c_array, t):
-        c_array_ni = self.noise_schedule_function.generate_noise(c_array, t)
-        return c_array_ni
 
     def calculate_centroids(self, c_array, t, w_array):
         x_array = self.data_array
@@ -219,9 +212,4 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
             c_tplus1_array[m, :] = average_x_v(
                 K_inv_matrix[m, :], v_0_array, ms_array)
 
-        c_tplus1_array_ni = self.inject_noise_centroids(c_tplus1_array, t)
-
-        if self.use_projection == True:
-            return self.domain.project(c_tplus1_array_ni)
-        else:
-            return c_tplus1_array_ni
+        return c_tplus1_array

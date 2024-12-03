@@ -14,6 +14,7 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
 
     def __init__(self, params):
         super().__init__(params)
+        self.algo_name = "WFR"
         self.time_parameterization = params.get('time_parameterization')
         self.time_parameterization.SetLength(self.T)
 

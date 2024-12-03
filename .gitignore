@@ -3,7 +3,9 @@
 *.gif
 *.npy
 *.pkl
+*.pyc
 .DS_Store
 experiments/sandbox/**
+experiments/validated/**
 experiments/*.txt
 ! **/.keep

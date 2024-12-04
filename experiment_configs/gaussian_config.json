@@ -9,20 +9,21 @@
             "distribution_name": "gaussian_distribution",
             "params": {
                 "d": 2,
-                "mean": [50, 50],
+                "mean": [20, 20],
                 "covariance": [[1, 0], [0, 1]]
             }
         },
         "experience": {
-            "R": 2
+            "R": 5
         },
         "optimization": {
-            "T": 100,
+            "T": 500,
+            "dilation": 0.1,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {
                     "d": 2,
-                    "beta_ns": 2
+                    "beta_ns": 0.0
                 }
             }
         },
@@ -41,8 +42,8 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 6,
-                        "bandwidth_end_value": 0.1
+                        "bandwidth_start_value": 4.5,
+                        "bandwidth_end_value": 4.5
                     }
                 }
             }

@@ -6,7 +6,7 @@
             "freeze_init": 0
         },
         "optimization": {
-            "T": 200
+            "T": 100
         },
         "initial_distribution": {
             "distribution_name": "kmeans++",

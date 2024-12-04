@@ -106,6 +106,8 @@ def categorize_params(config, function_map):
     # Process optimization parameters, including noise_schedule_functions_list
     optimization_params = config['params'].get('optimization', {})
     params["T"] = optimization_params.get("T", None)
+    params["dilation"] = optimization_params.get("dilation", None)
+    
 
     # Process and flatten intial distribution parameters directly
     initial_distribution_info = config['params'].get(
@@ -162,5 +164,6 @@ def categorize_params(config, function_map):
     # Dataset parameters
     dataset_params = config['params'].get('dataset', {})
     params.update(dataset_params)
+    #print(params)
 
     return params

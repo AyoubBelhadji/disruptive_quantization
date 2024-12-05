@@ -116,7 +116,7 @@ if __name__ == "__main__":
                         experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array)
 
                 if show_mmd_visualization:
-                    my_kernel = GaussianKernel(4.5)
+                    my_kernel = GaussianKernel(5.5)
                     visualize_and_save_dynamics_with_mmd(
                         experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array,my_kernel)
 

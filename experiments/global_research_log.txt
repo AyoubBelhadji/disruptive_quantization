@@ -958,3 +958,73 @@ Timestamp: 2024-12-04 15:22:45
 Python File: experiment_run.py
 Comment: Experiment based on gaussian_config.json
 ---------------------------------
+
+Experiment ID: 122
+Experiment: wfr_config
+Category: sandbox
+Algorithm: WassersteinFisherRao
+Parameters: {'K': 3, 'freeze_init': 0, 'R': 3, 'T': 100, 'dilation': None, 'd': 2, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x30b550190>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16fb0dfa0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 4.5, 'bandwidth_end_value': 4.5, 'end_time': 1000.0, 'time_parameterization': <functions.time_parameterizations.time_parameterizations.LinearTimeParameterization object at 0x30bed91c0>, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 15:26:20
+Python File: experiment_run.py
+Comment: Experiment based on wfr_config.json
+---------------------------------
+
+Experiment ID: 123
+Experiment: kmeans_config
+Category: sandbox
+Algorithm: KmeansClustering
+Parameters: {'K': 3, 'freeze_init': 0, 'R': 2, 'T': 200, 'dilation': None, 'initial_distribution': <functions.initial_distributions.kmeanspp_distribution.KmeansPlusPlusDistribution object at 0x30c064550>, 'dataset_name': 'gmm_data', 'N': 1000, 'd': 2}
+Timestamp: 2024-12-04 15:26:45
+Python File: experiment_run.py
+Comment: Experiment based on kmeans_config.json
+---------------------------------
+
+Experiment ID: 124
+Experiment: gaussian_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 5, 'T': 500, 'dilation': 0.2, 'd': 2, 'mean': [20, 20], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x30b48e520>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x30b48eca0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 4.5, 'bandwidth_end_value': 4.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x30d739eb0>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 15:31:31
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_config.json
+---------------------------------
+
+Experiment ID: 125
+Experiment: gaussian_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 5, 'T': 500, 'dilation': 0.2, 'd': 2, 'mean': [20, 20], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x30bfaed60>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x30d7694c0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 5.5, 'bandwidth_end_value': 5.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x30d769070>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 15:34:40
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_config.json
+---------------------------------
+
+Experiment ID: 126
+Experiment: gaussian_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 5, 'T': 500, 'dilation': 0.1, 'd': 2, 'mean': [20, 20], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x30be785e0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x30be781c0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 5.5, 'bandwidth_end_value': 5.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x30c162520>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 15:41:13
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_config.json
+---------------------------------
+
+Experiment ID: 127
+Experiment: gaussian_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 5, 'T': 500, 'dilation': 0.05, 'd': 2, 'mean': [20, 20], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x30bd52c40>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x30bd52a30>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 5.5, 'bandwidth_end_value': 5.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x30bcf13a0>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 18:06:35
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_config.json
+---------------------------------
+
+Experiment ID: 128
+Experiment: gaussian_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 1, 'R': 5, 'T': 500, 'dilation': 0.01, 'd': 2, 'mean': [20, 20], 'covariance': [[1, 0], [0, 1]], 'initial_distribution': <functions.initial_distributions.gaussian_distribution.GaussianDistribution object at 0x30d70d9a0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x30d0dbb80>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 5.5, 'bandwidth_end_value': 5.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x30d0db310>, 'a': -25, 'b': 25, 'dataset_name': 'gmm_data', 'N': 1000}
+Timestamp: 2024-12-04 18:19:31
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_config.json
+---------------------------------

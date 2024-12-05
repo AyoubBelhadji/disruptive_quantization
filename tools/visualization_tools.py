@@ -81,35 +81,9 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array)
 
 
 
-def rbf_kernel(x, y, bandwidth=1.0):
-    """
-    Computes the RBF kernel between two sets of points.
-    
-    Parameters:
-    - x (numpy array): First set of points (N x d).
-    - y (numpy array): Second set of points (M x d).
-    - bandwidth (float): Bandwidth parameter for the RBF kernel.
-    
-    Returns:
-    - kernel_matrix (numpy array): Kernel matrix (N x M).
-    """
-    x = np.expand_dims(x, axis=1)  # Shape: (N, 1, d)
-    y = np.expand_dims(y, axis=0)  # Shape: (1, M, d)
-    return np.exp(-np.sum((x - y) ** 2, axis=2) / (2 * bandwidth ** 2))
-
 
 def compute_mmd(X, Y, kernel):
-    """
-    Computes the MMD between two datasets using the RBF kernel.
 
-    Parameters:
-    - X (numpy array): First dataset (N x d).
-    - Y (numpy array): Second dataset (M x d).
-    - bandwidth (float): Bandwidth parameter for the RBF kernel.
-
-    Returns:
-    - mmd (float): Maximum Mean Discrepancy value.
-    """
     K_XX = kernel.kernel(X, X)
     K_YY = kernel.kernel(Y, Y)
     K_XY = kernel.kernel(X, Y)
@@ -119,30 +93,14 @@ def compute_mmd(X, Y, kernel):
 
 
 def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, data_array, kernel):
-    """
-    Visualizes particle dynamics, saves GIF animations, and plots MMD over iterations.
 
-    Parameters:
-    - experiment_name (str): Name of the experiment for saving files.
-    - c_array_trajectory (numpy array): Trajectory of centroids (R x T x M x d).
-    - data_array (numpy array): Target distribution points (N x d).
-    - bandwidth (float): Bandwidth parameter for the RBF kernel.
-    
-    Returns:
-    - gif_paths (list): List of paths to saved GIFs.
-    - mmd_plot_path (str): Path to the saved MMD plot.
-    """
     R, T, M, d = c_array_trajectory.shape
-    gif_paths = []  # To store paths of saved GIFs
-    mmd_values = np.zeros((R, T))  # To store MMD values
+    mmd_values = np.zeros((R, T))  
 
-    # Ensure output folders exist
-    #gif_folder = f"figures/{experiment_name}/gif/"
+
     mmd_folder = f"figures/{experiment_name}/plots/"
-    #os.makedirs(gif_folder, exist_ok=True)
     os.makedirs(mmd_folder, exist_ok=True)
 
-    # Compute MMD for each repetition and time step
     for r in range(R):
         for t in range(T):
             mmd_values[r, t] = compute_mmd(data_array, c_array_trajectory[r, t], kernel)
@@ -156,6 +114,7 @@ def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, da
     plt.title("MMD evolution over iterations")
     plt.xlabel("Iteration")
     plt.ylabel("MMD")
+    #plt.
     plt.legend()
     plt.grid()
 

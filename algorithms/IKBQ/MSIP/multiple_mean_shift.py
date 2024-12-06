@@ -277,6 +277,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         c_tplus1_array_ni = self.inject_noise_centroids(c_tplus1_array, t)
 
         if self.use_projection == True:
+            print('projection')
             return self.domain.project(c_tplus1_array_ni)
         else:
             return c_tplus1_array_ni

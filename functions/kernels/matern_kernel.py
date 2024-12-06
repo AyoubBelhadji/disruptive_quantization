@@ -17,6 +17,7 @@ import numpy as np
 class MaternKernel:
     def __init__(self, bandwidth):
         self.sigma = bandwidth  
+        self.nu = 2.5
         if self.nu == 0.5:
             self.kernel = self.matern_nu_0_5(self.sigma)
             self.kernel_grad = self.matern_nu_0_5_grad(self.sigma)

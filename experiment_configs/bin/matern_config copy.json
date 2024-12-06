@@ -14,11 +14,11 @@
             }
         },
         "experience": {
-            "R": 5
+            "R": 1
         },
         "optimization": {
-            "T": 500,
-            "dilation": 0.1,
+            "T": 2000,
+            "dilation": 0.5,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {
@@ -43,8 +43,8 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 4.5,
-                        "bandwidth_end_value": 4.5
+                        "bandwidth_start_value": 5.5,
+                        "bandwidth_end_value": 5.5
                     }
                 }
             }

@@ -1,38 +1,23 @@
 {
-    "algorithm_name": "MultipleMeanShift",
+    "algorithm_name": "WassersteinFisherRao",
     "params": {
         "solution": {
             "K": 3,
-            "freeze_init": 1
+            "freeze_init": 0
         },
         "initial_distribution": {
             "distribution_name": "gaussian_distribution",
             "params": {
                 "d": 2,
-                "mean": [50, 50],
+                "mean": [20, 20],
                 "covariance": [[1, 0], [0, 1]]
             }
         },
         "experience": {
-            "R": 2
+            "R": 5
         },
         "optimization": {
-            "T": 100,
-            "noise_schedule_function": {
-                "noise_schedule_function_name": "gaussian_sqrt_noise",
-                "params": {
-                    "d": 2,
-                    "beta_ns": 2
-                }
-            }
-        },
-        "domain": {
-            "class": "hypercube",
-            "params": {
-                "d": 2,
-                "a": -25,
-                "b": 25
-            }
+            "T": 200
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",
@@ -41,10 +26,16 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 6,
-                        "bandwidth_end_value": 0.1
+                        "bandwidth_start_value": 4.5,
+                        "bandwidth_end_value": 4.5
                     }
                 }
+            }
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 1e3
             }
         },
         "dataset": {

@@ -19,6 +19,7 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 # from algorithms.IKBQ.
 
 from functions.kernels.gaussian_kernel import *
+from functions.kernels.matern_kernel import *
 from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
@@ -35,6 +36,7 @@ function_map = {
     "gaussian_distribution": GaussianDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
+    "matern_kernel": MaternKernel, 
     "data_distribution": DataDistribution,
     "kmeans++": KmeansPlusPlusDistribution,
     "constant_kernel_bandwidth": ConstantKernelBandwidth,
@@ -46,7 +48,7 @@ function_map = {
 # Load available algorithms
 algorithms = get_available_algorithms()
 show_gif_visualization = True
-
+show_mmd_visualization = True
 
 # Main execution
 if __name__ == "__main__":
@@ -112,6 +114,12 @@ if __name__ == "__main__":
                 if show_gif_visualization:
                     visualize_and_save_dynamics(
                         experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array)
+
+                if show_mmd_visualization:
+                    my_kernel = params['kernel'].GetKernel()
+                    #GaussianKernel(5.5)
+                    visualize_and_save_dynamics_with_mmd(
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array,my_kernel)
 
             except ValueError as e:
                 print(

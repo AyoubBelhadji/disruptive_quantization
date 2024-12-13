@@ -62,6 +62,7 @@ if __name__ == "__main__":
     # Define the folder containing experiment configuration files
     config_folder = os.path.join(
         os.path.dirname(__file__), config_subdir)
+    output_subdir = config_subdir if config_subdir != 'examples' else ''
 
     # If the folder does not exist, try the experiment_configs folder
     if not os.path.isdir(config_folder):
@@ -118,7 +119,7 @@ if __name__ == "__main__":
                     # Use the filename (without extension) as the experiment name
                     experiment_name=config_filename.split('.')[0],
                     results_folder_base="experiments",
-                    experiment_subdir=config_subdir,
+                    experiment_subdir=output_subdir,
                     category="sandbox",
                     algorithm=rand_algo,
                     comment=f"Experiment based on {config_filename}"
@@ -127,12 +128,12 @@ if __name__ == "__main__":
                 # Visualize the dynamics using a gif
                 if show_gif_visualization:
                     visualize_and_save_dynamics(
-                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array)
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
 
                 if show_mmd_visualization and 'kernel' in params:
                     my_kernel = params['kernel'].GetKernel()
                     visualize_and_save_dynamics_with_mmd(
-                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, my_kernel)
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, my_kernel, output_subdir)
 
             except ValueError as e:
                 print(

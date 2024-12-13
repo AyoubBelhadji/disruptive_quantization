@@ -204,9 +204,11 @@ class SimulationManager:
         }
         return result
 
-    def save_experiments(self, experiment_name="experiment", results_folder_base="results", category="sandbox", algorithm=None, python_file_name=None, comment=None):
+    def save_experiments(self, experiment_name="experiment", results_folder_base="results", category="sandbox", experiment_subdir=None, algorithm=None, python_file_name=None, comment=None):
         # Allow the user to specify if the experiment is "sandbox" or "validated"
-        results_folder_base = f"{results_folder_base}/{category}"
+        results_folder_base = os.path.join(results_folder_base, category)
+        if experiment_subdir:
+            results_folder_base = os.path.join(results_folder_base, experiment_subdir)
         os.makedirs(results_folder_base, exist_ok=True)
 
         experiment_id = get_next_experiment_id()  # Get the next integer ID
@@ -228,9 +230,6 @@ class SimulationManager:
 
         np.save(npy_file_path, self.experiments)
         print(f"Experiments saved in {npy_file_path}")
-
-        # self.compare_results(save_pdf=True, pdf_file_path=pdf_file_path)
-        # print(f"Comparison plot saved as {pdf_file_path}")
 
         if algorithm:
             self.save_experiment_code(experiment_folder, experiment_name,

@@ -107,7 +107,6 @@ def categorize_params(config, function_map):
     optimization_params = config['params'].get('optimization', {})
     params["T"] = optimization_params.get("T", None)
     params["dilation"] = optimization_params.get("dilation", None)
-    
 
     # Process and flatten intial distribution parameters directly
     initial_distribution_info = config['params'].get(

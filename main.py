@@ -39,10 +39,9 @@ function_map = {
 
 # Set up the argument parser
 parser = argparse.ArgumentParser(description="Run quantization experiments")
-parser.add_argument(
-    "-g", "--gif", help="Show gif visualization", action="store_true")
-parser.add_argument("-m", "--mmd-viz",
-                    help="Show mmd visualization", action="store_true")
+parser.add_argument("--no-viz", help="No visualization (default generates gif + MMD)", action="store_true")
+parser.add_argument("-g", "--gif",
+                    help="Just visualize gif", action="store_true")
 parser.add_argument(
     "--dir", help="Configuration subdirectory in ./ or ./experiment_configs", type=str, default='examples')
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
@@ -51,8 +50,10 @@ parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
-    show_gif_visualization = args.gif
-    show_mmd_visualization = args.mmd_viz
+    no_viz = args.no_viz
+    just_gif = args.gif
+    show_gif_visualization = just_gif and not no_viz
+    show_mmd_visualization = not (just_gif or no_viz)
     config_subdir = args.dir
     debug = args.debug
 

@@ -24,7 +24,6 @@ class GaussianSqrtNoise:
         self.mean = np.zeros(self.d)
         self.covariance = np.eye(self.d)
         self.beta = params.get('beta_ns', 0.0)
-        print(self.beta)
 
     def generate_noise(self, c_array, t):
         """

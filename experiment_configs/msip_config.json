@@ -3,25 +3,26 @@
     "params": {
         "solution": {
             "K": 3,
-            "freeze_init": 0
+            "freeze_init": 1
         },
         "initial_distribution": {
-            "distribution_name": "data_distribution",
+            "distribution_name": "gaussian_distribution",
             "params": {
-                "d": 2
+                "d": 2,
+                "mean": [50, 50],
+                "covariance": [[1, 0], [0, 1]]
             }
         },
         "experience": {
-            "R": 1
+            "R": 2
         },
         "optimization": {
-            "T": 500,
-            "dilation": 0.5,
+            "T": 100,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {
                     "d": 2,
-                    "beta_ns": 0.0
+                    "beta_ns": 2
                 }
             }
         },
@@ -40,8 +41,8 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 5.5,
-                        "bandwidth_end_value": 5.5
+                        "bandwidth_start_value": 6,
+                        "bandwidth_end_value": 0.1
                     }
                 }
             }

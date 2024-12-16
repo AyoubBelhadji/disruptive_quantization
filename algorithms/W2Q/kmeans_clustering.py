@@ -58,12 +58,14 @@ class KmeansClustering(AbstractAlgorithm):
             else:
                 self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(self.K, data_array)
 
-            for t in tqdm(range(self.T - 1), position=0):
+            for t in tqdm(range(self.T), position=0):
                 c_t = self.c_array_trajectory[r, t, :, :]
                 w_t = self.w_array_trajectory[r, t, :]
-                c_tplus1 = self.c_array_trajectory[r, t+1, :, :]
                 self.calculate_labels(c_t)
                 self.calculate_weights(w_t)
+                if t == self.T - 1:
+                    break # Skip calculating next nodes for last iteration
+                c_tplus1 = self.c_array_trajectory[r, t+1, :, :]
                 self.calculate_centroids(c_tplus1)
 
         return self.c_array_trajectory, self.w_array_trajectory

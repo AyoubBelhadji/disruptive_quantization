@@ -102,7 +102,7 @@ def stable_log_kde(x, n_array, pre_kernel):
     return pre_kernel_offset+np.log(b)
 
 
-def average_x_v(x, y, v):
+def average_x_v_2(x, y, v):
     """
     Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
     Handles zero or near-zero weights gracefully.
@@ -118,6 +118,9 @@ def average_x_v(x, y, v):
     """
 
     nnzeros = np.where(np.abs(x) > 0.0)[0]
+    print(x)
+    print(y)
+    print(v)
     if len(nnzeros) == x.shape[0]-1:
         zeros = np.where(np.abs(x) == 0.0)[0]
         # print(zeros)
@@ -125,8 +128,53 @@ def average_x_v(x, y, v):
     elif len(nnzeros) == 1:
         return v[nnzeros[0], :]
     else:
-
+        #print(y)
         t = np.log(y)
+        t_max = np.max(t)
+
+        t_adjusted = t - t_max
+
+        exp_y_adjusted = np.exp(t_adjusted)
+
+        z = x*exp_y_adjusted
+
+        N = z.shape[0]
+
+        z = z.reshape((N, 1))
+        a = np.sum(z * v, axis=0)
+        b = np.sum(z)
+
+        # Return the ratio
+        return (1 / b) * a
+
+def average_x_v(x, t, v):
+    """
+    Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
+    Handles zero or near-zero weights gracefully.
+
+    Args:
+        x: An array of scalars (weights), shape (N,).
+        t: An array of log positive scalars (weights), shape (N,).
+        v: An array of vectors (N, D), where each row is a vector v_i of dimension D.
+        epsilon: Small value to handle near-zero weights.
+
+    Returns:
+        A vector representing the weighted mean.
+    """
+
+    nnzeros = np.where(np.abs(x) > 0.0)[0]
+    #print(x)
+    #print(y)
+    #print(v)
+    if len(nnzeros) == x.shape[0]-1:
+        zeros = np.where(np.abs(x) == 0.0)[0]
+        # print(zeros)
+        return v[zeros[0], :]
+    elif len(nnzeros) == 1:
+        return v[nnzeros[0], :]
+    else:
+        #print(y)
+        #t = np.log(y)
         t_max = np.max(t)
 
         t_adjusted = t - t_max
@@ -150,7 +198,17 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
+# <<<<<<< HEAD
         self.reg_K = params.get('reg_K', 0.0001)
+# =======
+#         self.reg_K = params.get('reg_K')
+#         self.noise_schedule_function = params.get('noise_schedule_function')
+#         self.use_projection = params.get('use_projection')
+#         self.dilation = params.get('dilation',1.0)
+#         #print('dilation')
+#         #print(self.dilation)
+#         self.reg_K = 0.0001
+# >>>>>>> main
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
@@ -200,16 +258,30 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         for m in range(self.M):
             tmp_0_list = [kernel(
                 c_array[m, :], x_array[n, :]) for n in range(self.N)]
-            v_0_array[m] = (1/self.N)*sum(tmp_0_list)
+            #v_0_array[m] = (1/self.N)*sum(tmp_0_list)
             ms_array[m, :] = stable_ms_map(
                 c_array[m, :], self.data_array, pre_kernel)
             log_v_0_array[m] = stable_log_kde(
                 c_array[m, :], self.data_array, pre_kernel)
+            #print(log_v_0_array[m])
+            v_0_array[m] = np.exp(log_v_0_array[m])
 
         for m in range(self.M):
             arr_tmp = K_inv_matrix[m, :]*v_0_array
             arr_tmp = arr_tmp.reshape((self.M, 1))
-            c_tplus1_array[m, :] = average_x_v(
-                K_inv_matrix[m, :], v_0_array, ms_array)
+            #c_tplus1_array[m, :] = average_x_v(
+            #    K_inv_matrix[m, :], v_0_array, ms_array)
+            c_tplus1_array[m, :] = (1-self.dilation)*c_array[m,:] + self.dilation*average_x_v(
+                K_inv_matrix[m, :], log_v_0_array, ms_array)
 
+# <<<<<<< HEAD
         return c_tplus1_array
+# =======
+#         c_tplus1_array_ni = self.inject_noise_centroids(c_tplus1_array, t)
+
+#         if self.use_projection == True:
+#             print('projection')
+#             return self.domain.project(c_tplus1_array_ni)
+#         else:
+#             return c_tplus1_array_ni
+# >>>>>>> main

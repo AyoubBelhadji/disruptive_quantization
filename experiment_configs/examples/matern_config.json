@@ -3,7 +3,7 @@
     "params": {
         "solution": {
             "K": 3,
-            "freeze_init": 0
+            "freeze_init": 1
         },
         "initial_distribution": {
             "distribution_name": "data_distribution",
@@ -34,8 +34,9 @@
             }
         },
         "kernel": {
-            "kernel_name": "gaussian_kernel",
+            "kernel_name": "matern_kernel",
             "params": {
+                "nu" :2,
                 "bandwidth_schedule_function": {
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {

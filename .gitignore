@@ -4,6 +4,7 @@
 *.npy
 *.pkl
 *.pyc
+*.png
 .DS_Store
 experiments/sandbox/**
 experiments/validated/**

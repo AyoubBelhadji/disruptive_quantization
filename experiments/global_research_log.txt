@@ -128,3 +128,13 @@ Timestamp: 2024-11-18 18:34:06
 Python File: experiment_run.py
 Comment: Experiment based on pre_config.json
 ---------------------------------
+
+Experiment ID: 39
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 0, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c74c760>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c3db0d0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c27b6a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-16 13:57:34
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------

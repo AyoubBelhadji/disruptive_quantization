@@ -11,3 +11,4 @@
 36,experiments/sandbox/pre_config_36_20241118_181232
 37,experiments/sandbox/pre_config_37_20241118_181948
 38,experiments/sandbox/pre_config_38_20241118_183406
+39,experiments/sandbox/gaussian_mnist_config_39_20241216_135734

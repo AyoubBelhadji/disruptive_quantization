@@ -1538,3 +1538,293 @@ Timestamp: 2024-12-05 22:25:53
 Python File: experiment_run.py
 Comment: Experiment based on gaussian_config.json
 ---------------------------------
+
+Experiment ID: 180
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 100, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x311609850>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x311701130>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x311701eb0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 15:58:26
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 181
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 10, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x155ccecd0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x156f3b100>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x156f3b160>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:02:18
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 182
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 10, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x15df8fca0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x15f1c40d0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x15f1c40a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:32:13
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 183
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 10, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x15f1987c0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x15f44bca0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x15f44b520>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:37:42
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 184
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 10, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x16bea1670>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x15df91550>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x15df989a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:40:40
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 185
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 10, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x16bf66460>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf66400>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf683a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:43:13
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 186
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x16bf675e0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf67e50>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.5, 'bandwidth_end_value': 1.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf69d60>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 16:51:05
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 187
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x16c010e50>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c010a00>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 0.8, 'bandwidth_end_value': 0.8, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf23400>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 17:00:01
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 188
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.data_distribution.DataDistribution object at 0x16c0860a0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c0865b0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.0, 'bandwidth_end_value': 1.0, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c2e8100>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 17:07:03
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 189
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16bda13d0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf6f4f0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.0, 'bandwidth_end_value': 1.0, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf6f4c0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 17:14:24
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 190
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c22b310>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c22b2e0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 0.8, 'bandwidth_end_value': 0.8, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf554c0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 17:22:27
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 191
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16082d9d0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c0f9d30>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 0.5, 'bandwidth_end_value': 0.5, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c0f9cd0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 21:19:58
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 192
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c65d850>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c65d820>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 1.2, 'bandwidth_end_value': 1.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c108640>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 21:30:14
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 193
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c78f7c0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c78f820>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf668b0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 21:45:06
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 194
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c312730>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf233a0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf239a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 22:01:13
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 195
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 3, 'freeze_init': 0, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16bf23700>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x1602170a0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x15df904f0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 22:02:45
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------
+
+Experiment ID: 196
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.8, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c2735e0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf5deb0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf5dc10>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 22:46:19
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 197
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 0, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16bf68be0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c7823d0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf5dc70>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 22:52:09
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------
+
+Experiment ID: 198
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 50, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c089760>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c545640>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c312c40>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 23:05:43
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 199
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 0, 'R': 1, 'T': 50, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c312910>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c38d880>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c38d8b0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 23:16:05
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------
+
+Experiment ID: 200
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 5, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16dd0e640>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16ddd3a00>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16ddd39d0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-06 23:44:02
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 201
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 5, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c6dde20>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16bf67f40>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16bf677f0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:01:37
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 202
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 5, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c0d8430>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x15df98d90>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x15df98c10>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:03:33
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 203
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 5, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c2979d0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16dd1b280>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16dd1bdc0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:05:40
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 204
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 0, 'R': 1, 'T': 5, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x15df348b0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x1607f4a90>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x1607f4e80>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:06:32
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------
+
+Experiment ID: 205
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16dd0e790>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c68f580>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c6ddeb0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:14:29
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 206
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c297dc0>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c813af0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x16c813b20>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:22:28
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------
+
+Experiment ID: 207
+Experiment: gaussian_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 0, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x16c813d30>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x16c56e970>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x177e966a0>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-07 00:28:50
+Python File: experiment_run.py
+Comment: Experiment based on gaussian_mnist_config.json
+---------------------------------
+
+Experiment ID: 208
+Experiment: matern_mnist_config
+Category: sandbox
+Algorithm: MultipleMeanShift
+Parameters: {'K': 10, 'freeze_init': 1, 'R': 1, 'T': 25, 'dilation': 0.5, 'd': 784, 'initial_distribution': <functions.initial_distributions.uniform_hypercube_distribution.UniformHypercubeDistribution object at 0x14150e100>, 'kernel': <functions.kernels.kernel_bandwidth_scheduler.ExponentialDecayKernelBandwidth object at 0x14573a2e0>, 'bandwidth_decay_rate': -0.05, 'bandwidth_start_value': 2.2, 'bandwidth_end_value': 2.2, 'noise_schedule_function': <functions.noise_generators.gaussian_sqrt_noise.GaussianSqrtNoise object at 0x14573a340>, 'a': 0, 'b': 1, 'dataset_name': 'mnist/mnist_data', 'N': 60000}
+Timestamp: 2024-12-16 13:53:13
+Python File: experiment_run.py
+Comment: Experiment based on matern_mnist_config.json
+---------------------------------

@@ -1,0 +1,56 @@
+{
+    "algorithm_name": "MultipleMeanShift",
+    "params": {
+        "solution": {
+            "K": 10,
+            "freeze_init": 1
+        },
+        
+        "initial_distribution": {
+            "distribution_name": "uniform_hypercube_distribution",
+            "params": {
+                "d": 784
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "T": 25,
+            "dilation": 0.5,
+            "noise_schedule_function": {
+                "noise_schedule_function_name": "gaussian_sqrt_noise",
+                "params": {
+                    "d": 2,
+                    "beta_ns": 0.0
+                }
+            }
+        },
+        "domain": {
+            "class": "hypercube",
+            "params": {
+                "d": 784,
+                "a": 0,
+                "b": 1
+            }
+        },
+        "kernel": {
+            "kernel_name": "matern_kernel",
+            "params": {
+                "nu" :2,
+                "bandwidth_schedule_function": {
+                    "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
+                    "params": {
+                        "bandwidth_decay_rate": -0.05,
+                        "bandwidth_start_value": 2.2,
+                        "bandwidth_end_value": 2.2
+                    }
+                }
+            }
+        },
+        "dataset": {
+            "dataset_name": "mnist/mnist_data",
+            "N": 60000
+        }
+    }
+}

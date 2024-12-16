@@ -22,6 +22,7 @@ from functions.kernels.gaussian_kernel import *
 from functions.kernels.matern_kernel import *
 from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
+from functions.initial_distributions.uniform_hypercube_distribution import *
 from functions.initial_distributions.data_distribution import *
 from functions.initial_distributions.kmeanspp_distribution import *
 from functions.noise_generators.gaussian_sqrt_noise import *
@@ -29,11 +30,13 @@ from functions.time_parameterizations.time_parameterizations import *
 from tools.files_tools import *
 from tools.visualization_tools import *
 from tools.simulation_manager import *
+from tools.image_tools import *
 
 
 # Map function names to function objects
 function_map = {
     "gaussian_distribution": GaussianDistribution,
+    "uniform_hypercube_distribution": UniformHypercubeDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
     "matern_kernel": MaternKernel, 
@@ -47,9 +50,10 @@ function_map = {
 
 # Load available algorithms
 algorithms = get_available_algorithms()
-show_gif_visualization = True
-show_mmd_visualization = True
-
+show_gif_visualization = False
+show_mmd_visualization = False
+show_weights_visualization = True
+show_image_visualization = True
 # Main execution
 if __name__ == "__main__":
     # Define the folder containing experiment configuration files
@@ -120,6 +124,26 @@ if __name__ == "__main__":
                     #GaussianKernel(5.5)
                     visualize_and_save_dynamics_with_mmd(
                         experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array,my_kernel)
+                    
+                if show_weights_visualization:
+                    my_kernel = params['kernel'].GetKernel()
+                    visualize_and_save_dynamics_with_weights(
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array,my_kernel)
+
+                if show_image_visualization:
+                    c_array_trajectory = rand_algo.c_array_trajectory
+                    # T = params['T']
+                    # M = params['K']
+                    # x_lists = []
+                    # for m in list(range(M)):
+                    #     c_m_history = [c_array_trajectory[0,t,m,:] for t in list(range(T))]
+                    #     x_lists.append(c_m_history)
+                    #     #show_list_of_images(c_k_history,28,28)
+                    
+                    visualize_and_save_dynamics_with_image(
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, 28,28)
+                    #animate_images(x_lists, 0, d_1=28, d_2=28, iterations=T)
+
 
             except ValueError as e:
                 print(

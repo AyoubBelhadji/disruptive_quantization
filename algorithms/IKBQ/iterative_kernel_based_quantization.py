@@ -32,6 +32,8 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.freeze_init = params.get('freeze_init')
 
         self.domain = params.get('domain')
+        self.noise_schedule_function = params.get('noise_schedule_function')
+        self.use_projection = params.get('use_projection')
 
         self.c_array_trajectory = np.zeros((self.R, self.T, self.K, self.d))
         self.w_array_trajectory = np.zeros((self.R, self.T, self.K))
@@ -40,6 +42,12 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
 
     def evaluate(self, metric):
         return 0
+
+    def inject_noise_centroids(self, c_array, t):
+        if self.noise_schedule_function is None:
+            return c_array
+        c_array_ni = self.noise_schedule_function.generate_noise(c_array, t)
+        return c_array_ni
 
     def run(self, data_array):
         self.data_array = data_array
@@ -69,7 +77,15 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
             for t in tqdm(range(self.T - 1), position=0):
                 c_t = self.c_array_trajectory[r, t, :, :]
                 w_t = self.w_array_trajectory[r, t, :]
-                self.c_array_trajectory[r, t+1, :, :] = self.calculate_centroids(c_t, t, w_t)
+                c_t_plus_1 = self.calculate_centroids(c_t, t, w_t)
+
+                # Adjust the centroids according to noise schedule
+                c_t_plus_1 = self.inject_noise_centroids(c_t_plus_1, t)
+                # Project the centroids back into the domain
+                if self.use_projection:
+                    c_t_plus_1 = self.domain.project(c_t_plus_1)
+
+                self.c_array_trajectory[r, t+1, :, :] = c_t_plus_1
                 self.w_array_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)
 
         return self.c_array_trajectory, self.w_array_trajectory

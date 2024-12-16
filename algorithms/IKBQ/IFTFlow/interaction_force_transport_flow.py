@@ -14,6 +14,7 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
 
     def __init__(self, params):
         super().__init__(params)
+        self.name = "IFTFlow"
         self.centroid_step_size = params.get('centroid_step_size')
         self.weight_step_size = params.get('weight_step_size')
         self.eta = params.get('eta', 1.)

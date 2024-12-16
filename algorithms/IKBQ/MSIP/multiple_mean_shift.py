@@ -69,7 +69,7 @@ def stable_ms_map(x, n_array, pre_kernel):
     b = np.sum(weights)
 
     # Return the mean shift map value
-    return (1 / b) * a
+    return a / b
 
 
 def stable_log_kde(x, n_array, pre_kernel):
@@ -95,7 +95,7 @@ def stable_log_kde(x, n_array, pre_kernel):
     weights = weights.reshape((n_array.shape[0], 1))
 
     # Compute the weighted sum of the differences
-    a = np.sum(weights * n_array, axis=0)
+    # a = np.sum(weights * n_array, axis=0)
     b = np.sum(weights)
 
     # Return the mean shift map value
@@ -198,13 +198,8 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
-        self.reg_K = params.get('reg_K')
-        self.noise_schedule_function = params.get('noise_schedule_function')
-        self.use_projection = params.get('use_projection')
+        self.reg_K = params.get('reg_K', 0.0001)
         self.dilation = params.get('dilation',1.0)
-        #print('dilation')
-        #print(self.dilation)
-        self.reg_K = 0.0001
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
@@ -230,10 +225,6 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
 
         return weights_array
 
-    def inject_noise_centroids(self, c_array, t):
-        c_array_ni = self.noise_schedule_function.generate_noise(c_array, t)
-        return c_array_ni
-
     def calculate_centroids(self, c_array, t, w_array):
         x_array = self.data_array
 
@@ -256,28 +247,17 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         K_inv_matrix = adjugate_matrix(K_matrix)
 
         for m in range(self.M):
-            tmp_0_list = [kernel(
-                c_array[m, :], x_array[n, :]) for n in range(self.N)]
-            #v_0_array[m] = (1/self.N)*sum(tmp_0_list)
             ms_array[m, :] = stable_ms_map(
                 c_array[m, :], self.data_array, pre_kernel)
             log_v_0_array[m] = stable_log_kde(
                 c_array[m, :], self.data_array, pre_kernel)
-            #print(log_v_0_array[m])
             v_0_array[m] = np.exp(log_v_0_array[m])
 
         for m in range(self.M):
             arr_tmp = K_inv_matrix[m, :]*v_0_array
             arr_tmp = arr_tmp.reshape((self.M, 1))
-            #c_tplus1_array[m, :] = average_x_v(
-            #    K_inv_matrix[m, :], v_0_array, ms_array)
             c_tplus1_array[m, :] = (1-self.dilation)*c_array[m,:] + self.dilation*average_x_v(
                 K_inv_matrix[m, :], log_v_0_array, ms_array)
 
-        c_tplus1_array_ni = self.inject_noise_centroids(c_tplus1_array, t)
+        return c_tplus1_array
 
-        if self.use_projection == True:
-            print('projection')
-            return self.domain.project(c_tplus1_array_ni)
-        else:
-            return c_tplus1_array_ni

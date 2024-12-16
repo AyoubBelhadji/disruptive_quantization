@@ -23,7 +23,7 @@ class GaussianSqrtNoise:
         self.d = params.get('d')
         self.mean = np.zeros(self.d)
         self.covariance = np.eye(self.d)
-        self.beta = params.get('beta_ni', 1)
+        self.beta = params.get('beta_ns', 0.0)
 
     def generate_noise(self, c_array, t):
         """
@@ -36,7 +36,10 @@ class GaussianSqrtNoise:
         Returns:
         - numpy.ndarray: The input array with added noise.
         """
-        M, _ = c_array.shape
-        covariance = (self.beta / np.sqrt(t + 1)) * self.covariance
-        noise = np.random.multivariate_normal(self.mean, covariance, M)
-        return c_array + noise
+        if self.beta == 0.0:
+            return c_array
+        else:
+            M, _ = c_array.shape
+            covariance = (self.beta / np.sqrt(t + 1)) * self.covariance
+            noise = np.random.multivariate_normal(self.mean, covariance, M)
+            return c_array + noise

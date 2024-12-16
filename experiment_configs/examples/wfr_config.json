@@ -1,10 +1,6 @@
 {
-    "algorithm_name": "InteractionForceTransportFlow",
+    "algorithm_name": "WassersteinFisherRao",
     "params": {
-        "hyperparams": {
-            "centroid_step_size": 0.1,
-            "weight_step_size": 1e-3
-        },
         "solution": {
             "K": 3,
             "freeze_init": 0
@@ -19,7 +15,14 @@
             "R": 3
         },
         "optimization": {
-            "T": 100
+            "T": 100,
+            "noise_schedule_function": {
+                "noise_schedule_function_name": "gaussian_sqrt_noise",
+                "params": {
+                    "d": 2,
+                    "beta_ns": 0.1
+                }
+            }
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",
@@ -28,10 +31,16 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 6,
-                        "bandwidth_end_value": 0.1
+                        "bandwidth_start_value": 4.5,
+                        "bandwidth_end_value": 4.5
                     }
                 }
+            }
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 1e3
             }
         },
         "dataset": {

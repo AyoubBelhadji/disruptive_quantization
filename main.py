@@ -7,18 +7,11 @@ Also also created on Mon Nov 18 6:22:10 2024
 @author: ayoubbelhadji
 """
 
+import os, argparse
 
-import os
-import importlib
-import numpy as np
-import json
-from datetime import datetime
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter
-
-# from algorithms.IKBQ.
-
+# Import relevant functions
 from functions.kernels.gaussian_kernel import *
+from functions.kernels.matern_kernel import *
 from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
@@ -35,6 +28,7 @@ function_map = {
     "gaussian_distribution": GaussianDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
+    "matern_kernel": MaternKernel,
     "data_distribution": DataDistribution,
     "kmeans++": KmeansPlusPlusDistribution,
     "constant_kernel_bandwidth": ConstantKernelBandwidth,
@@ -43,16 +37,42 @@ function_map = {
     "logarithmic_time_parameterization": LogarithmicTimeParameterization
 }
 
-# Load available algorithms
-algorithms = get_available_algorithms()
-show_gif_visualization = True
-
+# Set up the argument parser
+parser = argparse.ArgumentParser(description="Run quantization experiments")
+parser.add_argument("--no-viz", help="No visualization (default generates gif + MMD)", action="store_true")
+parser.add_argument("-g", "--gif",
+                    help="Just visualize gif", action="store_true")
+parser.add_argument(
+    "--dir", help="Configuration subdirectory in ./ or ./experiment_configs", type=str, default='examples')
+parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 
 # Main execution
 if __name__ == "__main__":
+    # Parse the arguments
+    args = parser.parse_args()
+    no_viz = args.no_viz
+    just_gif = args.gif
+    show_gif_visualization = just_gif and not no_viz
+    show_mmd_visualization = not (just_gif or no_viz)
+    config_subdir = args.dir
+    debug = args.debug
+
+    # Load available algorithms
+    algorithms = get_available_algorithms(debug=debug)
+
     # Define the folder containing experiment configuration files
     config_folder = os.path.join(
-        os.path.dirname(__file__), 'experiment_configs')
+        os.path.dirname(__file__), config_subdir)
+    output_subdir = config_subdir if config_subdir != 'examples' else ''
+
+    # If the folder does not exist, try the experiment_configs folder
+    if not os.path.isdir(config_folder):
+        config_folder = os.path.join(os.path.dirname(
+            __file__), 'experiment_configs', config_subdir)
+
+    if not os.path.isdir(config_folder):
+        raise FileNotFoundError(
+            f"Could not find the experiment configuration folder {config_folder}")
 
     # Initialize the ExperimentManager
     sim_manager = SimulationManager()
@@ -68,9 +88,6 @@ if __name__ == "__main__":
             # Extract experiment details
             algorithm_name = config['algorithm_name']
             params = categorize_params(config, function_map)
-
-            # Check if debugging
-            debug = config.get('debug', False)
 
             # Initialize the data loader
             data_loader = DataLoader(datasets_folder='datasets')
@@ -103,6 +120,7 @@ if __name__ == "__main__":
                     # Use the filename (without extension) as the experiment name
                     experiment_name=config_filename.split('.')[0],
                     results_folder_base="experiments",
+                    experiment_subdir=output_subdir,
                     category="sandbox",
                     algorithm=rand_algo,
                     comment=f"Experiment based on {config_filename}"
@@ -111,7 +129,12 @@ if __name__ == "__main__":
                 # Visualize the dynamics using a gif
                 if show_gif_visualization:
                     visualize_and_save_dynamics(
-                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array)
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
+
+                if show_mmd_visualization and 'kernel' in params:
+                    my_kernel = params['kernel'].GetKernel()
+                    visualize_and_save_dynamics_with_mmd(
+                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, my_kernel, output_subdir)
 
             except ValueError as e:
                 print(

@@ -52,7 +52,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_viz = args.no_viz
     just_gif = args.gif
-    show_gif_visualization = just_gif and not no_viz
+    show_gif_visualization = just_gif or not no_viz
     show_mmd_visualization = not (just_gif or no_viz)
     config_subdir = args.dir
     debug = args.debug

@@ -139,14 +139,15 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
             mmd_values[r, t] = compute_mmd_weighted(data_array, c_array_trajectory[r, t], kernel, None, w_array[r,t])
 
     w_sums = w_array.sum(axis=2)
+    plt.figure()
     for r in range(R):
         plt.plot(range(T), w_sums[r], label=f"r={r}", lw=3)
     plt.title(f"Sum of weights, {alg_name}")
     plt.xlabel("t")
     plt.ylabel("Sum of weights")
     plt.legend()
-    plt.show()
     plt.savefig(os.path.join(mmd_folder, "sum_of_weights.png"))
+    plt.show()
 
     for r in range(R):
         for m in range(M):
@@ -212,7 +213,7 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
     # Plot MMD over iterations for all repetitions
     plt.figure(figsize=(10, 6))
     for r in range(R):
-        plt.plot(range(T), mmd_values[r], color='black', label=f"r={r}")
+        plt.plot(range(T), mmd_values[r], label=f"r={r}", lw=3)
 
     plt.title(f"MMD evolution over iterations, {alg_name}")
     plt.xlabel("Iteration")

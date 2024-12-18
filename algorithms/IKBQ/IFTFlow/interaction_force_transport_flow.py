@@ -25,20 +25,16 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
 
     def calculate_weights(self, c_t, t, w_t):
         # Calculate gradient direction
-        gradient_dir = np.zeros_like(w_t)
+        dF_dmu = np.zeros_like(w_t)
         c_t_plus_1 = self.c_workspace
         for i in range(self.K):
-            gradient_dir[i]  = -self.kernel(self.data_array, c_t_plus_1[i]).mean() * self.eta
-            gradient_dir[i] += -w_t.dot(self.kernel(c_t_plus_1, c_t_plus_1[i]))
+            dF_dmu[i]  = self.kernel(self.data_array, c_t_plus_1[i]).mean()
+            dF_dmu[i] -= w_t.dot(self.kernel(c_t_plus_1, c_t_plus_1[i]))
 
         # Update weights using one step of interior point method
-        proposed_step = w_t - gradient_dir
-        descent_dir = proj_simplex(proposed_step) - w_t
+        proposed_step = w_t * np.exp( self.eta * dF_dmu )
+        w_tp1 = proj_simplex(proposed_step)
 
-        tau_w = self.weight_step_size
-        w_tp1 = w_t + tau_w * descent_dir
-        if (w_tp1 < 0).any():
-            w_tp1 = proj_simplex(w_tp1)
         return w_tp1
 
     def calculate_centroids(self, c_t, t, w_t):
@@ -49,7 +45,9 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
         for i in range(self.K):
             self.c_workspace[i,:] = c_t[i,:]
             # Gradient step for node i
-            self.c_workspace[i] -= tau_c * self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
-            self.c_workspace[i] += tau_c * w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+            self.c_workspace[i] += tau_c * self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
+            self.c_workspace[i] -= tau_c * w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+        self.c_workspace[:] *= w_t[:, None]
+
         return self.c_workspace
 

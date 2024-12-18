@@ -138,6 +138,16 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
         for t in range(T):
             mmd_values[r, t] = compute_mmd_weighted(data_array, c_array_trajectory[r, t], kernel, None, w_array[r,t])
 
+    w_sums = w_array.sum(axis=2)
+    for r in range(R):
+        plt.plot(range(T), w_sums[r], label=f"r={r}", lw=3)
+    plt.title(f"Sum of weights, {alg_name}")
+    plt.xlabel("t")
+    plt.ylabel("Sum of weights")
+    plt.legend()
+    plt.show()
+    plt.savefig(os.path.join(mmd_folder, "sum_of_weights.png"))
+
     for r in range(R):
         for m in range(M):
             plt.figure()

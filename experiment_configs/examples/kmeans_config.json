@@ -1,6 +1,9 @@
 {
     "algorithm_name": "KmeansClustering",
     "params": {
+        "hyperparams": {
+            "test_kernel_bandwidth": 5.0
+        },
         "solution": {
             "K": 3,
             "freeze_init": 0

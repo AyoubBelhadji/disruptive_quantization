@@ -30,7 +30,7 @@ def create_folder_if_needed(folder_path):
 class DataLoader:
     def __init__(self, datasets_folder='datasets'):
         """
-        Initializes the data loader for Gaussian Mixture Model (GMM) datasets.
+        Initializes the data loader.
 
         Args:
             datasets_folder (str): Path to the folder containing datasets.
@@ -62,12 +62,6 @@ class DataLoader:
         try:
             with open(dataset_path, 'rb') as f:
                 data_dict = pickle.load(f)
-
-                # Ensure the dataset is a dictionary with the expected keys
-                required_keys = {'data', 'labels', 'params'}
-                if not isinstance(data_dict, dict) or not required_keys.issubset(data_dict.keys()):
-                    raise ValueError(
-                        f"Dataset '{dataset_name}' does not have the required structure.")
 
                 # Extract the requested component
                 if component not in data_dict:

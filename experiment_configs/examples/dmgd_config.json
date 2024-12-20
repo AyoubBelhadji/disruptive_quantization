@@ -1,0 +1,34 @@
+{
+    "algorithm_name": "DiscrepancyMinimizingGradientDescent",
+    "params": {
+        "hyperparams": {
+            "centroid_step_size": 1.0
+        },
+        "solution": {
+            "K": 3,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 2
+            }
+        },
+        "experience": {
+            "R": 2
+        },
+        "optimization": {
+            "T": 500
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 5.0
+            }
+        },
+        "dataset": {
+            "dataset_name": "gmm_data",
+            "N": 1000
+        }
+    }
+}

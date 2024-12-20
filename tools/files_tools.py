@@ -157,6 +157,5 @@ def categorize_params(config, function_map):
     # Dataset parameters
     dataset_params = config['params'].get('dataset', {})
     params.update(dataset_params)
-    #print(params)
 
     return params

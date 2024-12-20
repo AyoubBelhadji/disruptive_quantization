@@ -17,26 +17,10 @@ from .files_tools import *
 def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array, config_folder = ""):
     R,T,M,d = c_array_trajectory.shape
     animations = []  # To store animations for each repetition
-
+    xlims = [np.min(data_array[:, 0]), np.max(data_array[:, 0])]
+    ylims = [np.min(data_array[:, 1]), np.max(data_array[:, 1])]
     for r in range(R):
         fig, ax = plt.subplots()
-
-        # def update(frame, current_R):
-        #     ax.clear()
-
-        #     ax.set_xlim([-15, 28])
-        #     ax.set_ylim([-15, 28])
-
-        #     # Plot static positions
-        #     ax.scatter(data_array[:, 0], data_array[:, 1], color='black', label='target distribution')
-        #     # Plot trajectories for each particle at this frame
-        #     for k in range(M):
-        #         ax.scatter(c_array_trajectory[current_R, frame, k, 0], c_array_trajectory[current_R, frame, k, 1], color='red',
-        #                    label=f'Particle {k}' if frame == 0 else "")
-        #     ax.set_title(f'Repetition {current_R + 1}, Time step {frame + 1}')
-        #     ax.legend()
-
-
 
         def animate(t, current_R):
             ax.clear()
@@ -44,8 +28,8 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
             centroids_0 = c_array_trajectory[r,0, :, :]
             ## Change the following: the windows size should be in the config file
 
-            ax.set_xlim([-25, 25])
-            ax.set_ylim([-25, 25])
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
             # Plot all data points
             ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=0.5)
 

@@ -48,9 +48,10 @@ import numpy as np
 #         else:
 #             plt.show()
 
+from algorithms.base_algorithm import AbstractAlgorithm
 
 # Load and initialize algorithm
-def initialize_algorithm(algorithms, algorithm_name, params):
+def initialize_algorithm(algorithms, algorithm_name, params) -> AbstractAlgorithm:
     if algorithm_name in algorithms:
         return algorithms[algorithm_name](params=params)
     else:

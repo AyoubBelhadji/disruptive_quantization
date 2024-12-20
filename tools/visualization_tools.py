@@ -17,26 +17,10 @@ from .files_tools import *
 def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array, config_folder = ""):
     R,T,M,d = c_array_trajectory.shape
     animations = []  # To store animations for each repetition
-
+    xlims = [np.min(data_array[:, 0]), np.max(data_array[:, 0])]
+    ylims = [np.min(data_array[:, 1]), np.max(data_array[:, 1])]
     for r in range(R):
         fig, ax = plt.subplots()
-
-        # def update(frame, current_R):
-        #     ax.clear()
-
-        #     ax.set_xlim([-15, 28])
-        #     ax.set_ylim([-15, 28])
-
-        #     # Plot static positions
-        #     ax.scatter(data_array[:, 0], data_array[:, 1], color='black', label='target distribution')
-        #     # Plot trajectories for each particle at this frame
-        #     for k in range(M):
-        #         ax.scatter(c_array_trajectory[current_R, frame, k, 0], c_array_trajectory[current_R, frame, k, 1], color='red',
-        #                    label=f'Particle {k}' if frame == 0 else "")
-        #     ax.set_title(f'Repetition {current_R + 1}, Time step {frame + 1}')
-        #     ax.legend()
-
-
 
         def animate(t, current_R):
             ax.clear()
@@ -44,8 +28,8 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
             centroids_0 = c_array_trajectory[r,0, :, :]
             ## Change the following: the windows size should be in the config file
 
-            ax.set_xlim([-25, 25])
-            ax.set_ylim([-25, 25])
+            ax.set_xlim(xlims)
+            ax.set_ylim(ylims)
             # Plot all data points
             ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=0.5)
 
@@ -57,15 +41,9 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
 
             ax.set_title('Iteration t='+str(t))
 
-            #ax.set_xlabel('X1')
-            #ax.set_ylabel('X2')
             ax.legend()
 
-
-        # Animate for the first repetition (adjust if you want all repetitions)
-        #current_R = 0  # Focus on the first repetition
         ani = FuncAnimation(fig, animate, frames=T, interval=200, fargs=(r,))
-        #experiment_name = "experiment_name"
 
         folder_name = os.path.join("figures", config_folder, experiment_name, "gif")
 
@@ -111,18 +89,15 @@ def compute_mmd_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
     if weights_Y is None:
         weights_Y = np.ones(len(Y)) / len(Y)
 
-    weights_X = weights_X[:, np.newaxis]
-    weights_Y = weights_Y[:, np.newaxis]
-
     K_XX = kernel(X, X)
     K_YY = kernel(Y, Y)
     K_XY = kernel(X, Y)
 
     # Weighted means
     mmd = (
-        np.sum(weights_X * weights_X.T * K_XX) +
-        np.sum(weights_Y * weights_Y.T * K_YY) -
-        2 * np.sum(weights_X * weights_Y.T * K_XY)
+        weights_X.T.dot(K_XX).dot(weights_X) +
+        weights_Y.T.dot(K_YY).dot(weights_Y) -
+        2 * weights_X.T.dot(K_XY).dot(weights_Y)
     )
     return mmd
 

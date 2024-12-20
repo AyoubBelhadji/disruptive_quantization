@@ -98,6 +98,9 @@ if __name__ == "__main__":
                 data = data_loader.load_dataset(dataset_name)
                 print(
                     f"Loaded dataset shape for {config_filename}: {data.shape}")
+                if "N" in params:
+                    print(f"Using subset of size {params['N']}")
+                    data = data[:params["N"]]
             except Exception as e:
                 print(f"Failed to load dataset for {config_filename}: {e}")
                 continue

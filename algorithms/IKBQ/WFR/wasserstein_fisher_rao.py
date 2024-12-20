@@ -6,6 +6,7 @@ Created on 11/26/2024 12:49:00
 """
 
 import numpy as np
+import numbers
 from scipy.integrate import solve_ivp
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
@@ -17,6 +18,15 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         self.algo_name = "WFR"
         self.time_parameterization = params.get('time_parameterization')
         self.time_parameterization.SetLength(self.T)
+        self.point_accelerator = params.get('point_accelerator', 1.0)
+
+        # Create the ODE solver function
+        self.ODE_solver_str = params.get('ODE_solver', 'RK45')
+        if self.ODE_solver_str == 'Euler':
+            self.WFR_ODE_solver = self.Solve_WFR_ODE_Euler
+            self.steps_per_iteration = params.get('steps_per_iteration', 1)
+        else:
+            self.WFR_ODE_solver = self.Solve_WFR_ODE_Scipy
 
         # Create workspaces for the centroids and weights
         # Front-facing workspaces
@@ -46,16 +56,45 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         self.kernel = self.kernel_scheduler.GetKernel()
         self.kernel_grad2 = self.kernel_scheduler.GetKernelGrad2()
 
+        # Accelerate the points ODE
+        self.point_acceleration = self.point_accelerator
+        if self.point_acceleration == 'bandwidth':
+            self.point_acceleration = self.kernel_scheduler.get_bandwidth()**2
+        if not isinstance(self.point_acceleration, numbers.Number):
+            raise ValueError(f"WFR: Invalid point_accelerator {self.point_acceleration}, type {type(self.point_acceleration)}")
+
         # Concatenate the centroids and weights into a single initial condition
         self.y0[:-self.K] = c_t.reshape(-1)
         self.y0[-self.K:] = w_t
 
         # Solve the ODE
-        y1 = solve_ivp(self.WFR_ODE, tspan, self.y0, t_eval=(tspan[1],))
+        y1 = self.WFR_ODE_solver(tspan)
 
         # Copy output into the output arrays
-        c_tplus1[:] = y1.y[:-self.K].reshape((self.K, self.d))
-        w_tplus1[:] = y1.y[-self.K:].reshape(-1)
+        c_tplus1[:] = y1[:-self.K].reshape((self.K, self.d))
+        w_tplus1[:] = y1[-self.K:].reshape(-1)
+
+    def Solve_WFR_ODE_Scipy(self, tspan):
+        """
+        Solve the Wasserstein Fisher-Rao mean-field ODE over the given time span
+        """
+        y1 = solve_ivp(self.WFR_ODE, tspan, self.y0, t_eval=(tspan[1],), method=self.ODE_solver_str)
+        if len(y1.y) == 0:
+            raise ValueError(f"ODE solver failed to converge for {tspan}, {y1.y}")
+        return y1.y
+
+    def Solve_WFR_ODE_Euler(self, tspan):
+        """
+        Solve the Wasserstein Fisher-Rao mean-field ODE over the given time span
+        """
+        t0, t1 = tspan
+        num_steps = self.steps_per_iteration
+        dt = (t1-t0)/num_steps
+        y1 = self.y0.copy()
+        for t in np.linspace(t0, t1, num_steps, endpoint=False):
+            self.WFR_ODE(t, y1)
+            y1[:] += dt*self.diff_workspace
+        return y1
 
     def WFR_ODE(self, _, y):
         """
@@ -75,14 +114,14 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
         c_dot = self.cdot_workspace
         for i in range(self.K):
-            c_dot[i] = -self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
-            c_dot[i] += w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+            c_dot[i]  = self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
+            c_dot[i] -= w_t.dot(self.kernel_grad2(c_t, c_t[i]))
+        c_dot[:] *= self.point_acceleration*w_t[:, None]
 
     def WFR_ODE_weight_diff(self, c_t, w_t):
         w_dot = self.wdot_workspace
         for i in range(self.K):
-            expected_xc = self.kernel(self.data_array, c_t[i]).mean()
-            w_dot[i] = expected_xc
+            w_dot[i]  = self.kernel(self.data_array, c_t[i]).mean()
             w_dot[i] -= w_t.dot(self.kernel(c_t, c_t[i]))
         # Fisher-Rao adjustment
         w_dot[:] *= w_t

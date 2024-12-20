@@ -37,10 +37,10 @@ class GaussianKernel:
 
     def Gaussian_kernel_grad2(self, sigma):
         def kernel_aux(x, y):
-            diff = y - x
+            diff = x - y
             log_kernel = -np.linalg.norm(diff, axis=-1) ** 2 / (2 * (sigma ** 2))
             kernel_out = np.exp(log_kernel).reshape(-1,1)
-            return np.squeeze(kernel_out * diff) * sigma
+            return np.squeeze(kernel_out * diff) / (sigma ** 2)
         return kernel_aux
 
     def quadratic_function(self, sigma):

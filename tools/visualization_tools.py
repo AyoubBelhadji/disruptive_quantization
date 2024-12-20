@@ -41,15 +41,9 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
 
             ax.set_title('Iteration t='+str(t))
 
-            #ax.set_xlabel('X1')
-            #ax.set_ylabel('X2')
             ax.legend()
 
-
-        # Animate for the first repetition (adjust if you want all repetitions)
-        #current_R = 0  # Focus on the first repetition
         ani = FuncAnimation(fig, animate, frames=T, interval=200, fargs=(r,))
-        #experiment_name = "experiment_name"
 
         folder_name = os.path.join("figures", config_folder, experiment_name, "gif")
 
@@ -95,18 +89,15 @@ def compute_mmd_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
     if weights_Y is None:
         weights_Y = np.ones(len(Y)) / len(Y)
 
-    weights_X = weights_X[:, np.newaxis]
-    weights_Y = weights_Y[:, np.newaxis]
-
     K_XX = kernel(X, X)
     K_YY = kernel(Y, Y)
     K_XY = kernel(X, Y)
 
     # Weighted means
     mmd = (
-        np.sum(weights_X * weights_X.T * K_XX) +
-        np.sum(weights_Y * weights_Y.T * K_YY) -
-        2 * np.sum(weights_X * weights_Y.T * K_XY)
+        weights_X.T.dot(K_XX).dot(weights_X) +
+        weights_Y.T.dot(K_YY).dot(weights_Y) -
+        2 * weights_X.T.dot(K_XY).dot(weights_Y)
     )
     return mmd
 

@@ -127,42 +127,33 @@ def compute_mmd_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
     return mmd
 
 
-def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, data_array, kernel, config_folder = ""):
-
-    R, T, M, d = c_array_trajectory.shape
-    N,_ = data_array.shape
+def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder = ""):
+    R, T, M, _ = c_array_trajectory.shape
     mmd_values = np.zeros((R, T))
-
-    w_array = np.zeros((R,T,M))
-
 
     mmd_folder = os.path.join("figures", config_folder , experiment_name, "plots")
     os.makedirs(mmd_folder, exist_ok=True)
 
     for r in range(R):
         for t in range(T):
-            K_matrix = np.zeros((M, M))
-            v_0_array = np.zeros((M))
+            mmd_values[r, t] = compute_mmd_weighted(data_array, c_array_trajectory[r, t], kernel, None, w_array[r,t])
 
-
-            for m in list(range(M)):
-                tmp_0_list = [kernel(
-                    c_array_trajectory[r,t,m, :], data_array[n, :]) for n in range(N)]
-                v_0_array[m] = (1/N)*sum(tmp_0_list)
-            for m_1 in range(M):
-                for m_2 in range(M):
-                    K_matrix[m_1, m_2] = kernel(
-                        c_array_trajectory[r,t,m_1, :], c_array_trajectory[r,t,m_2, :])
-
-            w_array[r,t,:] = np.dot(np.linalg.inv(K_matrix),v_0_array)
-            mmd_values[r, t] = compute_mmd_weighted(data_array, c_array_trajectory[r, t],kernel, None, w_array[r,t,:])
+    w_sums = w_array.sum(axis=2)
+    plt.figure()
+    for r in range(R):
+        plt.plot(range(T), w_sums[r], label=f"r={r}", lw=3)
+    plt.title(f"Sum of weights, {alg_name}")
+    plt.xlabel("t")
+    plt.ylabel("Sum of weights")
+    plt.legend()
+    plt.savefig(os.path.join(mmd_folder, "sum_of_weights.png"))
+    plt.show()
 
     for r in range(R):
-
         for m in range(M):
             plt.figure()
             plt.plot(range(T), w_array[r, :, m], label=f"m={m}")
-            plt.title(f"Plot of w_array")
+            plt.title(f"Plot of weights, r={r}, {alg_name}")
             plt.xlabel("t")
             plt.ylabel("w_array")
             plt.xscale('log')
@@ -174,20 +165,16 @@ def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, da
 
             plt.show()
 
-
-
     for r in range(R):
         fig, axes = plt.subplots( M+1,1, figsize=(8, (M+1) * 5))  # 1 row, M+1 columns
         ax = axes[0]
-        ax.plot(range(T), mmd_values[r], label="MMD", color = "black")
+        ax.plot(range(T), mmd_values[r], color = "black")
         ax.set_xscale('log')
-        #plt.plot(range(T), mmd_values[r], color='black')
+        ax.set_title(f"Evolution of MMD, r={r}, {alg_name}")
         for m in range(M):
             ax = axes[m+1]  # Select the current subplot
             ax.plot(range(T), w_array[r, :, m], label=f"m={m}", color = "black")
-            #ax.set_title(f"r={r}, m={m}")
             ax.set_xlabel("t")
-            #ax.set_ylabel("w_array")
             ax.set_xscale('log')
             ax.legend()
             ax.grid(True)
@@ -204,6 +191,7 @@ def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, da
         ax = axes[0]
         ax.plot(range(T), mmd_values[r], label="MMD", color = "black")
         ax.set_xscale('log')
+        ax.set_title(f"Evolution of MMD with weight signs, r={r}, {alg_name}")
         #plt.plot(range(T), mmd_values[r], color='black')
         for m in range(M):
             ax = axes[m+1]  # Select the current subplot
@@ -225,15 +213,16 @@ def visualize_and_save_dynamics_with_mmd(experiment_name, c_array_trajectory, da
     # Plot MMD over iterations for all repetitions
     plt.figure(figsize=(10, 6))
     for r in range(R):
-        plt.plot(range(T), mmd_values[r], color='black')
+        plt.plot(range(T), mmd_values[r], label=f"r={r}", lw=3)
 
-    plt.title("MMD evolution over iterations")
+    plt.title(f"MMD evolution over iterations, {alg_name}")
     plt.xlabel("Iteration")
     plt.ylabel("MMD")
     plt.xscale('log')
     plt.yscale('log')
     plt.legend()
     plt.grid()
+    plt.show()
 
     mmd_plot_path = os.path.join(mmd_folder, "mmd_evolution.png")
     plt.savefig(mmd_plot_path)

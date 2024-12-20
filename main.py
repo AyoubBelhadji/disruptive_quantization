@@ -52,7 +52,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_viz = args.no_viz
     just_gif = args.gif
-    show_gif_visualization = just_gif and not no_viz
+    show_gif_visualization = just_gif or not no_viz
     show_mmd_visualization = not (just_gif or no_viz)
     config_subdir = args.dir
     debug = args.debug
@@ -131,10 +131,17 @@ if __name__ == "__main__":
                     visualize_and_save_dynamics(
                         experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
 
-                if show_mmd_visualization and 'kernel' in params:
-                    my_kernel = params['kernel'].GetKernel()
+                if show_mmd_visualization:
+                    if 'kernel' in params:
+                        test_kernel = params['kernel'].GetKernel()
+                    else:
+                        test_kernel_str = params.get('test_kernel', 'gaussian_kernel')
+                        test_kernel_bandwidth = params.get('test_kernel_bandwidth', 1.0)
+                        test_kernel = function_map[test_kernel_str](test_kernel_bandwidth).kernel
+                    c_array = rand_algo.c_array_trajectory
+                    w_array = rand_algo.w_array_trajectory
                     visualize_and_save_dynamics_with_mmd(
-                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, my_kernel, output_subdir)
+                        algorithm_name, experiment_full_id, c_array, w_array, rand_algo.data_array, test_kernel, output_subdir)
 
             except ValueError as e:
                 print(

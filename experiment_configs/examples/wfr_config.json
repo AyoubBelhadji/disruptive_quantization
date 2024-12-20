@@ -1,6 +1,9 @@
 {
     "algorithm_name": "WassersteinFisherRao",
     "params": {
+        "hyperparams": {
+            "point_accelerator": "bandwidth"
+        },
         "solution": {
             "K": 3,
             "freeze_init": 0

@@ -20,7 +20,7 @@ def expand_limits(min, max, factor):
     delta = max - min
     return min - factor * delta, max + factor * delta
 
-def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array, config_folder = "", limit_margin=0.1):
+def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder = "", limit_margin=0.1):
     R,T,M,d = c_array_trajectory.shape
     animations = []  # To store animations for each repetition
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(data_array[:, 0]), limit_margin)
@@ -45,7 +45,7 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
             # Plot moving centroids for frame t
             ax.scatter(list(c_array_trajectory[current_R,t, :, 0]), list(c_array_trajectory[current_R,t, :, 1]), color='green', alpha=1, label='Centroids', marker='P', s=100)
 
-            ax.set_title('Iteration t='+str(t))
+            ax.set_title(f'Iteration t={t}, r={r}, {alg_name}')
 
             ax.legend()
 

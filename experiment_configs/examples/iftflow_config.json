@@ -16,10 +16,10 @@
             }
         },
         "experience": {
-            "R": 3
+            "R": 10
         },
         "optimization": {
-            "T": 500
+            "T": 1000
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",
@@ -28,8 +28,8 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 4.5,
-                        "bandwidth_end_value": 4.5
+                        "bandwidth_start_value": 5.0,
+                        "bandwidth_end_value": 5.0
                     }
                 }
             }

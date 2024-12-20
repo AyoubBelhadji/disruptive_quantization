@@ -1,5 +1,5 @@
 {
-    "algorithm_name": "WassersteinFisherRao",
+    "algorithm_name": "MultipleMeanShift",
     "params": {
         "solution": {
             "K": 3,
@@ -12,16 +12,25 @@
             }
         },
         "experience": {
-            "R": 3
+            "R": 10
         },
         "optimization": {
-            "T": 100,
+            "T": 1000,
+            "dilation": 0.8,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {
                     "d": 2,
-                    "beta_ns": 0.1
+                    "beta_ns": 0.0
                 }
+            }
+        },
+        "domain": {
+            "class": "hypercube",
+            "params": {
+                "d": 2,
+                "a": -25,
+                "b": 25
             }
         },
         "kernel": {
@@ -31,16 +40,10 @@
                     "bandwidth_schedule_function_name": "exponential_decay_kernel_bandwidth",
                     "params": {
                         "bandwidth_decay_rate": -0.05,
-                        "bandwidth_start_value": 4.5,
-                        "bandwidth_end_value": 4.5
+                        "bandwidth_start_value": 5.0,
+                        "bandwidth_end_value": 5.0
                     }
                 }
-            }
-        },
-        "time_parameterization": {
-            "time_discretization_name": "linear_time_parameterization",
-            "params": {
-                "end_time": 1e3
             }
         },
         "dataset": {

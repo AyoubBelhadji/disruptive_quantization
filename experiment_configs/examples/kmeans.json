@@ -1,6 +1,9 @@
 {
     "algorithm_name": "KmeansClustering",
     "params": {
+        "hyperparams": {
+            "test_kernel_bandwidth": 5.0
+        },
         "solution": {
             "K": 3,
             "freeze_init": 0
@@ -13,7 +16,7 @@
             "params": {}
         },
         "experience": {
-            "R": 2
+            "R": 3
         },
         "dataset": {
             "dataset_name": "gmm_data",

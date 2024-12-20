@@ -13,12 +13,18 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 
 from .files_tools import *
 #from tqdm import tqdm
+def expand_limits(min, max, factor):
+    """
+    Expand the limits of a plot by a factor.
+    """
+    delta = max - min
+    return min - factor * delta, max + factor * delta
 
-def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array, config_folder = ""):
+def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array, config_folder = "", limit_margin=0.1):
     R,T,M,d = c_array_trajectory.shape
     animations = []  # To store animations for each repetition
-    xlims = [np.min(data_array[:, 0]), np.max(data_array[:, 0])]
-    ylims = [np.min(data_array[:, 1]), np.max(data_array[:, 1])]
+    xlims = expand_limits(np.min(data_array[:, 0]), np.max(data_array[:, 0]), limit_margin)
+    ylims = expand_limits(np.min(data_array[:, 1]), np.max(data_array[:, 1]), limit_margin)
     for r in range(R):
         fig, ax = plt.subplots()
 
@@ -34,10 +40,10 @@ def visualize_and_save_dynamics(experiment_name, c_array_trajectory, data_array,
             ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=0.5)
 
             # Plot initial centroids
-            ax.scatter(centroids_0[:, 0], centroids_0[:, 1], color='red', alpha=0.5, label='Initial Centroids')
+            ax.scatter(centroids_0[:, 0], centroids_0[:, 1], color='red', label='Initial Centroids', alpha=1, marker='D')
 
             # Plot moving centroids for frame t
-            ax.scatter(list(c_array_trajectory[current_R,t, :, 0]), list(c_array_trajectory[current_R,t, :, 1]), color='green', alpha=1, label='Centroids')
+            ax.scatter(list(c_array_trajectory[current_R,t, :, 0]), list(c_array_trajectory[current_R,t, :, 1]), color='green', alpha=1, label='Centroids', marker='P', s=100)
 
             ax.set_title('Iteration t='+str(t))
 

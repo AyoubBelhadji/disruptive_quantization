@@ -203,10 +203,9 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
     plt.yscale('log')
     plt.legend()
     plt.grid()
-    plt.show()
-
     mmd_plot_path = os.path.join(mmd_folder, "mmd_evolution.png")
     plt.savefig(mmd_plot_path)
+    plt.show()
     plt.close()
 
     return mmd_plot_path

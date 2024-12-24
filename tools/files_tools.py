@@ -140,7 +140,7 @@ def categorize_params(config, function_map):
         params.update(noise_schedule_function_params)
 
         params['noise_schedule_function'] = noise_schedule_function_class(
-            noise_schedule_function_params)
+            noise_schedule_function_params, params['rng'])
 
     # Process and flatten domain parameters directly
     domain_info = config['params'].get('domain', {})

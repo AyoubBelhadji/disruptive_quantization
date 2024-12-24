@@ -14,7 +14,7 @@ class KmeansPlusPlusDistribution:
         Initialize the GreedyMaxDistanceDistribution class with (unused) parameters.
 
         """
-        self.rng = params.get("rng", np.random.default_rng())
+        self.rng = params.get("rng")
 
     def generate_samples(self, M, data_array):
         """

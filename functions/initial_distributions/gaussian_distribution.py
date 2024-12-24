@@ -26,7 +26,7 @@ class GaussianDistribution:
         self.d = params.get('d')
         self.mean = np.asarray(params.get('mean', np.zeros(self.d)))  # Default mean is a zero vector
         self.covariance = np.asarray(params.get('covariance', np.eye(self.d)))  # Default covariance is an identity matrix
-        self.rng = params.get('rng', np.random.default_rng()) # Random number generator
+        self.rng = params.get('rng') # Random number generator
 
     def generate_samples(self, M, *_):
         """
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         'mean': np.array([50, 50]),
         'covariance': np.array([[1, 0], [0, 1]])
     }
-    gaussian = GaussianDistribution(params, np.random.default_rng())
+    gaussian = GaussianDistribution(params, np.random.default_rng(1))
     samples = gaussian.generate_samples(100)
     print(samples)
 

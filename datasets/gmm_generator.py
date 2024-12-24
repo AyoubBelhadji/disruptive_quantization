@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import pickle
 
-def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None):
+def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, seed=None):
     """
     Generate data from a d-dimensional Gaussian Mixture Model and optionally save it to a pickle file.
 
@@ -30,13 +30,14 @@ def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None):
     - params: dict
         Parameters used to generate the data.
     """
+    rng = np.random.default_rng(seed)
     if params is None:
         # Randomly generate weights, means, and covariances
-        weights = np.random.dirichlet(np.ones(n_components))
-        means = np.random.randn(n_components, d) * 5
+        weights = rng.dirichlet(np.ones(n_components))
+        means = rng.randn(n_components, d) * 5
         covariances = np.zeros((n_components, d, d))
         for i in range(n_components):
-            A = np.random.randn(d, d)
+            A = rng.randn(d, d)
             covariances[i] = np.dot(A, A.T) + np.eye(d)  # Ensure positive-definite
         params = {'weights': weights, 'means': means, 'covariances': covariances}
     else:
@@ -45,14 +46,14 @@ def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None):
         covariances = params['covariances']
 
     # Generate samples for each component
-    component_samples = np.random.choice(n_components, size=n_samples, p=weights)
+    component_samples = rng.choice(n_components, size=n_samples, p=weights)
     data = np.zeros((n_samples, d))
     labels = component_samples.copy()
     for i in range(n_components):
         idx = component_samples == i
         num_samples = np.sum(idx)
         if num_samples > 0:
-            data[idx] = np.random.multivariate_normal(means[i], covariances[i], num_samples)
+            data[idx] = rng.multivariate_normal(means[i], covariances[i], num_samples)
 
     # Save to pickle file if save_path is provided
     if save_path is not None:
@@ -122,6 +123,6 @@ if __name__ == "__main__":
     n_samples = 1000
     n_components = 3
     save_path = 'gmm_data.pkl'  # Specify the filename to save the data
-    data, labels, params = generate_gmm_data(d, n_samples, n_components, save_path=save_path)
+    data, labels, params = generate_gmm_data(d, n_samples, n_components, save_path=save_path, seed=1234)
     plot_gmm_data(data, labels, params['means'], params['covariances'])
 

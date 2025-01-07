@@ -1,4 +1,5 @@
 {
+    "rng_seed": 42,
     "algorithm_name": "MultipleMeanShift",
     "params": {
         "solution": {

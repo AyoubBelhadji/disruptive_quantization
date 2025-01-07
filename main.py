@@ -132,7 +132,7 @@ if __name__ == "__main__":
                 # Visualize the dynamics using a gif
                 if show_gif_visualization:
                     visualize_and_save_dynamics(
-                        experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
+                        algorithm_name, experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
 
                 if show_mmd_visualization:
                     if 'kernel' in params:

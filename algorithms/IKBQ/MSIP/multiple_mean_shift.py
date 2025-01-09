@@ -12,7 +12,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
 
 import numpy as np
-
+import numba as nb
 
 # Adjugate matrix
 def cofactor_matrix(matrix):
@@ -40,7 +40,7 @@ def adjugate_matrix(matrix):
     adjugate = cofactor.T  # Adjugate is the transpose of the cofactor matrix
     return adjugate
 
-
+@nb.jit(cache=True)
 def stable_ms_map(x, n_array, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
@@ -56,7 +56,7 @@ def stable_ms_map(x, n_array, pre_kernel):
 
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
-    pre_kernel_array = np.array([pre_kernel(n, x) for n in n_array])
+    pre_kernel_array = pre_kernel(n_array, x)
 
     pre_kernel_offset = np.max(pre_kernel_array)
 
@@ -71,7 +71,7 @@ def stable_ms_map(x, n_array, pre_kernel):
     # Return the mean shift map value
     return a / b
 
-
+@nb.jit(cache=True)
 def stable_log_kde(x, n_array, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
@@ -87,7 +87,7 @@ def stable_log_kde(x, n_array, pre_kernel):
 
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
-    pre_kernel_array = np.array([pre_kernel(n, x) for n in n_array])
+    pre_kernel_array = pre_kernel(n_array, x)
     pre_kernel_offset = np.max(pre_kernel_array)
 
     # Compute the weights (using broadcasting)
@@ -147,6 +147,7 @@ def average_x_v_2(x, y, v):
         # Return the ratio
         return (1 / b) * a
 
+@nb.jit(cache=True)
 def average_x_v(x, t, v):
     """
     Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
@@ -163,18 +164,12 @@ def average_x_v(x, t, v):
     """
 
     nnzeros = np.where(np.abs(x) > 0.0)[0]
-    #print(x)
-    #print(y)
-    #print(v)
     if len(nnzeros) == x.shape[0]-1:
         zeros = np.where(np.abs(x) == 0.0)[0]
-        # print(zeros)
         return v[zeros[0], :]
     elif len(nnzeros) == 1:
         return v[nnzeros[0], :]
     else:
-        #print(y)
-        #t = np.log(y)
         t_max = np.max(t)
 
         t_adjusted = t - t_max

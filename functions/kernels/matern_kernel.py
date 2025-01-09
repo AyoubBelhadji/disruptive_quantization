@@ -16,7 +16,7 @@ import numpy as np
 
 class MaternKernel:
     def __init__(self, bandwidth):
-        self.sigma = bandwidth  
+        self.sigma = bandwidth
         self.nu = 2.5
         if self.nu == 0.5:
             self.kernel = self.matern_nu_0_5(self.sigma)
@@ -107,6 +107,12 @@ class MaternKernel:
     
     
     def matern_nu_2_5(self,sigma):
+        # def kernel_aux(x, y):
+        #     r = np.linalg.norm(x - y, axis=-1)
+        #     sqrt5_r_l = np.sqrt(5) * r / sigma
+        #     k = (1 + sqrt5_r_l + (5 * r**2) / (3 * sigma**2)) * np.exp(-sqrt5_r_l)
+        #     return k
+
         def kernel_aux(x, y):
             if x.ndim == 1 and y.ndim == 1:
                 r = np.linalg.norm(x - y)
@@ -126,7 +132,7 @@ class MaternKernel:
 
     def matern_nu_2_5_grad(self, sigma):
         def kernel_aux(x, y):
-            diff = x - y 
+            diff = x - y
             r = np.linalg.norm(diff, axis=-1, keepdims=True)
             sqrt5_r_l = np.sqrt(5) * r / sigma
             r_safe = np.maximum(r, np.finfo(float).eps)

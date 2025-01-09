@@ -12,6 +12,7 @@ import os, argparse
 # Import relevant functions
 from functions.kernels.gaussian_kernel import *
 from functions.kernels.matern_kernel import *
+from functions.kernels.inverse_multiquadric_kernel import *
 from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
@@ -29,6 +30,7 @@ function_map = {
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
     "matern_kernel": MaternKernel,
+    "inverse_multiquadric_kernel": InverseMultiQuadricKernel,
     "data_distribution": DataDistribution,
     "kmeans++": KmeansPlusPlusDistribution,
     "constant_kernel_bandwidth": ConstantKernelBandwidth,

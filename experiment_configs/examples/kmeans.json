@@ -2,7 +2,8 @@
     "algorithm_name": "KmeansClustering",
     "params": {
         "hyperparams": {
-            "test_kernel_bandwidth": 5.0
+            "test_kernel": "inverse_multiquadric_kernel",
+            "test_kernel_bandwidth": 0.5
         },
         "solution": {
             "K": 3,

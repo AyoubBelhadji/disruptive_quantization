@@ -10,38 +10,13 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 # from .sub_algorithm import SubAlgorithm
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
-
+import tools.mmd_tools as mmd_tools
 import numpy as np
 import numba as nb
+from tools.utils import adjugate_matrix
 
-# Adjugate matrix
-def cofactor_matrix(matrix):
-    """
-    Calculate the cofactor matrix of a given square matrix.
-    """
-    n = matrix.shape[0]
-    cofactor = np.zeros((n, n))
-
-    for i in range(n):
-        for j in range(n):
-            # Minor of element (i, j)
-            minor = np.delete(np.delete(matrix, i, axis=0), j, axis=1)
-            # Cofactor is the determinant of the minor, times (-1)^(i+j)
-            cofactor[i, j] = ((-1) ** (i + j)) * np.linalg.det(minor)
-
-    return cofactor
-
-
-def adjugate_matrix(matrix):
-    """
-    Calculate the adjugate (adjoint) of a given square matrix.
-    """
-    cofactor = cofactor_matrix(matrix)
-    adjugate = cofactor.T  # Adjugate is the transpose of the cofactor matrix
-    return adjugate
-
-@nb.jit(cache=True)
-def stable_ms_map(x, n_array, pre_kernel):
+# @nb.jit(cache=True)
+def stable_ms_map(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
 
@@ -56,23 +31,22 @@ def stable_ms_map(x, n_array, pre_kernel):
 
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
-    pre_kernel_array = pre_kernel(n_array, x)
+    pre_kernel_array = mmd_tools.broadcast_kernel(pre_kernel, data, centroids) # (N, M)
 
-    pre_kernel_offset = np.max(pre_kernel_array)
+    pre_kernel_offset = np.max(pre_kernel_array, axis=0) # (M,)
 
     # Compute the weights (using broadcasting)
-    weights = np.exp(pre_kernel_array - pre_kernel_offset)
+    weights = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
 
-    weights = weights.reshape((n_array.shape[0], 1))
     # Compute the weighted sum of the differences
-    a = np.sum(weights * n_array, axis=0)
-    b = np.sum(weights)
+    a = weights.T.dot(data) # (M, d)
+    b = np.sum(weights, axis=0) # (M,)
 
     # Return the mean shift map value
-    return a / b
+    return a / b[:, np.newaxis] # (M, d)
 
-@nb.jit(cache=True)
-def stable_log_kde(x, n_array, pre_kernel):
+# @nb.jit(cache=True)
+def stable_log_kde(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
 
@@ -87,172 +61,95 @@ def stable_log_kde(x, n_array, pre_kernel):
 
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
-    pre_kernel_array = pre_kernel(n_array, x)
-    pre_kernel_offset = np.max(pre_kernel_array)
+    pre_kernel_array = mmd_tools.broadcast_kernel(pre_kernel, data, centroids) # (N, M)
+    pre_kernel_offset = np.max(pre_kernel_array, axis=0) # (M,)
 
     # Compute the weights (using broadcasting)
-    weights = np.exp(pre_kernel_array - pre_kernel_offset)
-    weights = weights.reshape((n_array.shape[0], 1))
+    weights = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
 
     # Compute the weighted sum of the differences
-    # a = np.sum(weights * n_array, axis=0)
-    b = np.sum(weights)
+    b = np.sum(weights, axis=0) # (M,)
 
     # Return the mean shift map value
-    return pre_kernel_offset+np.log(b)
+    return pre_kernel_offset+np.log(b) # (M,)
 
 
-def average_x_v_2(x, y, v):
+# @nb.jit(cache=True)
+def average_x_v(inverse_kernel_mat, log_w, kde_means):
     """
     Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
     Handles zero or near-zero weights gracefully.
 
     Args:
-        x: An array of scalars (weights), shape (N,).
-        y: An array of positive scalars (weights), shape (N,).
-        v: An array of vectors (N, D), where each row is a vector v_i of dimension D.
+        inverse_kernel_mat: An array of scalars (weights), shape (M,M).
+        log_w: An array of log positive scalars (weights), shape (M,).
+        kde_means: An array of vectors (M, D), where each row is a vector v_i of dimension D.
         epsilon: Small value to handle near-zero weights.
 
     Returns:
         A vector representing the weighted mean.
     """
+    log_w_max = np.max(log_w)
 
-    nnzeros = np.where(np.abs(x) > 0.0)[0]
-    print(x)
-    print(y)
-    print(v)
-    if len(nnzeros) == x.shape[0]-1:
-        zeros = np.where(np.abs(x) == 0.0)[0]
-        # print(zeros)
-        return v[zeros[0], :]
-    elif len(nnzeros) == 1:
-        return v[nnzeros[0], :]
-    else:
-        #print(y)
-        t = np.log(y)
-        t_max = np.max(t)
+    log_w_adjusted = log_w - log_w_max
 
-        t_adjusted = t - t_max
+    w_adjusted = np.exp(log_w_adjusted)
 
-        exp_y_adjusted = np.exp(t_adjusted)
+    KW = inverse_kernel_mat*w_adjusted
 
-        z = x*exp_y_adjusted
+    a = KW @ kde_means
+    b = np.sum(KW, axis=1)
 
-        N = z.shape[0]
+    # Return the ratio
+    ret = a / b[:,np.newaxis]
 
-        z = z.reshape((N, 1))
-        a = np.sum(z * v, axis=0)
-        b = np.sum(z)
+    for m in range(inverse_kernel_mat.shape[0]):
+        nnzeros = np.where(np.abs(inverse_kernel_mat[m]) > 0.0)[0]
+        if len(nnzeros) == inverse_kernel_mat.shape[1]-1: # I don't understand this branch of logic?
+            zeros = np.where(np.abs(inverse_kernel_mat[m]) == 0.0)[0]
+            ret[m] = kde_means[zeros[0], :]
+        elif len(nnzeros) == 1:
+            ret[m] = kde_means[nnzeros[0], :]
 
-        # Return the ratio
-        return (1 / b) * a
-
-@nb.jit(cache=True)
-def average_x_v(x, t, v):
-    """
-    Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
-    Handles zero or near-zero weights gracefully.
-
-    Args:
-        x: An array of scalars (weights), shape (N,).
-        t: An array of log positive scalars (weights), shape (N,).
-        v: An array of vectors (N, D), where each row is a vector v_i of dimension D.
-        epsilon: Small value to handle near-zero weights.
-
-    Returns:
-        A vector representing the weighted mean.
-    """
-
-    nnzeros = np.where(np.abs(x) > 0.0)[0]
-    if len(nnzeros) == x.shape[0]-1:
-        zeros = np.where(np.abs(x) == 0.0)[0]
-        return v[zeros[0], :]
-    elif len(nnzeros) == 1:
-        return v[nnzeros[0], :]
-    else:
-        t_max = np.max(t)
-
-        t_adjusted = t - t_max
-
-        exp_y_adjusted = np.exp(t_adjusted)
-
-        z = x*exp_y_adjusted
-
-        N = z.shape[0]
-
-        z = z.reshape((N, 1))
-        a = np.sum(z * v, axis=0)
-        b = np.sum(z)
-
-        # Return the ratio
-        return (1 / b) * a
-
-
+    return ret
 class MultipleMeanShift(IterativeKernelBasedQuantization):
 
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'
-        self.reg_K = params.get('reg_K', 0.0001)
+        self.reg_K = params.get('reg_K', 1e-5)
         self.dilation = params.get('dilation',1.0)
+        use_adjugate = params.get('use_adjugate', True)
+        self.inv_K_fcn = adjugate_matrix if use_adjugate else np.linalg.inv
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
 
         # Be careful because K means kernel matrix and number of centroids
-        K_matrix = np.zeros((self.M, self.M))
-        mu_array = np.zeros((self.M))
         kernel = self.kernel_scheduler.GetKernel()
 
-        for m_1 in range(self.M):
-            for m_2 in range(self.M):
-                K_matrix[m_1, m_2] = kernel(
-                    c_array[m_1, :], c_array[m_2, :])
+        K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
+        mu_array = mmd_tools.broadcast_kernel(kernel, c_array, x_array).mean(axis=1)
 
-        for m in range(self.M):
-            tmp_list = [kernel(
-                c_array[m, :], x_array[n, :]) for n in range(self.N)]
-
-            mu_array[m] = sum(tmp_list)/self.N
-
-        weights_array = np.dot(np.linalg.inv(
-            K_matrix+self.reg_K*np.eye(self.M)), mu_array)
+        weights_array = np.linalg.solve(K_matrix, mu_array)
 
         return weights_array
 
     def calculate_centroids(self, c_array, t, w_array):
         x_array = self.data_array
 
-        K_matrix = np.zeros((self.M, self.M))
-        K_inv_matrix = np.zeros((self.M, self.M))
-        v_0_array = np.zeros(self.M)
-        log_v_0_array = np.zeros(self.M)
-        ms_array = np.zeros((self.M, self.d))
-        c_tplus1_array = np.zeros((self.M, self.d))
-
         # Get the kernel and prekernel functions
         kernel = self.kernel_scheduler.GetKernel()
         pre_kernel = self.kernel_scheduler.GetPreKernel()
 
-        for m_1 in range(self.M):
-            for m_2 in range(self.M):
-                K_matrix[m_1, m_2] = kernel(
-                    c_array[m_1, :], c_array[m_2, :])
+        K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
 
-        K_inv_matrix = adjugate_matrix(K_matrix)
+        K_inv_matrix = self.inv_K_fcn(K_matrix)
+        ms_array = stable_ms_map(c_array, x_array, pre_kernel)
+        log_v_0_array = stable_log_kde(c_array, x_array, pre_kernel)
 
-        for m in range(self.M):
-            ms_array[m, :] = stable_ms_map(
-                c_array[m, :], self.data_array, pre_kernel)
-            log_v_0_array[m] = stable_log_kde(
-                c_array[m, :], self.data_array, pre_kernel)
-            v_0_array[m] = np.exp(log_v_0_array[m])
-
-        for m in range(self.M):
-            arr_tmp = K_inv_matrix[m, :]*v_0_array
-            arr_tmp = arr_tmp.reshape((self.M, 1))
-            c_tplus1_array[m, :] = (1-self.dilation)*c_array[m,:] + self.dilation*average_x_v(
-                K_inv_matrix[m, :], log_v_0_array, ms_array)
+        c_tplus1_array = (1-self.dilation)*c_array + self.dilation*average_x_v(
+            K_inv_matrix, log_v_0_array, ms_array)
 
         return c_tplus1_array
 

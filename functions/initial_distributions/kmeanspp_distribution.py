@@ -9,12 +9,12 @@ Also created on Mon Nov 26 11:22:00 2024
 import numpy as np
 
 class KmeansPlusPlusDistribution:
-    def __init__(self, params):
+    def __init__(self, _, rng):
         """
         Initialize the GreedyMaxDistanceDistribution class with (unused) parameters.
 
         """
-        self.rng = params.get("rng")
+        self.rng = rng
 
     def generate_samples(self, M, data_array):
         """

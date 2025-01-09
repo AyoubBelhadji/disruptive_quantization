@@ -7,15 +7,12 @@ Also also created on Mon Nov 18 6:22:10 2024
 @author: ayoubbelhadji
 """
 
-
 # from .sub_algorithm import SubAlgorithm
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
 import tools.mmd_tools as mmd_tools
 import numpy as np
-import numba as nb
 from tools.utils import adjugate_matrix
 
-# @nb.jit(cache=True)
 def stable_ms_map(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
@@ -45,7 +42,6 @@ def stable_ms_map(centroids, data, pre_kernel):
     # Return the mean shift map value
     return a / b[:, np.newaxis] # (M, d)
 
-# @nb.jit(cache=True)
 def stable_log_kde(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
@@ -74,7 +70,6 @@ def stable_log_kde(centroids, data, pre_kernel):
     return pre_kernel_offset+np.log(b) # (M,)
 
 
-# @nb.jit(cache=True)
 def average_x_v(inverse_kernel_mat, log_w, kde_means):
     """
     Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
@@ -113,7 +108,6 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
 
     return ret
 class MultipleMeanShift(IterativeKernelBasedQuantization):
-
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = 'Vanilla MMS'

@@ -11,7 +11,7 @@ import numpy as np
 
 
 class GaussianDistribution:
-    def __init__(self, params):
+    def __init__(self, params, rng):
         """
         Initialize the GaussianDistribution class with parameters.
 
@@ -26,7 +26,7 @@ class GaussianDistribution:
         self.d = params.get('d')
         self.mean = np.asarray(params.get('mean', np.zeros(self.d)))  # Default mean is a zero vector
         self.covariance = np.asarray(params.get('covariance', np.eye(self.d)))  # Default covariance is an identity matrix
-        self.rng = params.get('rng') # Random number generator
+        self.rng = rng # Random number generator
 
     def generate_samples(self, M, *_):
         """

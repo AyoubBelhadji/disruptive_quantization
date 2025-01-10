@@ -96,7 +96,7 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
     b = np.sum(KW, axis=1)
 
     # Return the ratio
-    ret = a / b[:,np.newaxis]
+    ret = np.divide(a, b[:,np.newaxis], where=b[:,np.newaxis] != 0.0)
 
     for m in range(inverse_kernel_mat.shape[0]):
         nnzeros = np.where(np.abs(inverse_kernel_mat[m]) > 0.0)[0]

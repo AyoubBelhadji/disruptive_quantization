@@ -10,7 +10,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 import numpy as np
 
 class GaussianSqrtNoise:
-    def __init__(self, params):
+    def __init__(self, params, rng: np.random.Generator):
         """
         Initialize the GaussianSqrtNoise class with parameters.
 
@@ -24,6 +24,7 @@ class GaussianSqrtNoise:
         self.mean = np.zeros(self.d)
         self.covariance = np.eye(self.d)
         self.beta = params.get('beta_ns', 0.0)
+        self.rng = rng
 
     def generate_noise(self, c_array, t):
         """
@@ -41,5 +42,5 @@ class GaussianSqrtNoise:
         else:
             M, _ = c_array.shape
             covariance = (self.beta / np.sqrt(t + 1)) * self.covariance
-            noise = np.random.multivariate_normal(self.mean, covariance, M)
+            noise = self.rng.multivariate_normal(self.mean, covariance, M)
             return c_array + noise

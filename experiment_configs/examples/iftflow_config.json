@@ -1,4 +1,5 @@
 {
+    "rng_seed": 3284472,
     "algorithm_name": "InteractionForceTransportFlow",
     "params": {
         "hyperparams": {

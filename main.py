@@ -107,7 +107,10 @@ if __name__ == "__main__":
                     data = data[:params["N"]]
             except Exception as e:
                 print(f"Failed to load dataset for {config_filename}: {e}")
-                continue
+                if debug:
+                    raise e
+                else:
+                    continue
 
             # Example metadata
             experiment_metadata = {

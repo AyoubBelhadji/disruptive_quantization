@@ -1,6 +1,15 @@
 import numpy as np
 import numba as nb
 
+@nb.jit(parallel=True)
+def broadcast_kernel_parallel(kernel, x, y):
+    nthreads = nb.get_num_threads()
+    n, m = len(x), len(y)
+    K = np.zeros((n, m))
+    for i in nb.prange(n):
+        K[i] = kernel(x[i], y)
+    return K
+
 @nb.jit()
 def broadcast_kernel(kernel, x, y):
     """
@@ -14,10 +23,24 @@ def broadcast_kernel(kernel, x, y):
     Returns:
     - K: numpy array of shape (n, m), where K[i, j] = kernel(x[i], y[j]).
     """
+    MIN_PARALLEL = 1001
     assert x.shape[1] == y.shape[1], f"Dimension mismatch: {x.shape[1]} != {y.shape[1]}"
-    x = np.expand_dims(x, axis=1)
-    y = np.expand_dims(y, axis=0)
-    return kernel(x,y)
+    if len(x) < MIN_PARALLEL and len(y) < MIN_PARALLEL:
+        x = np.expand_dims(x, axis=1)
+        y = np.expand_dims(y, axis=0)
+        return kernel(x,y)
+    # Perform parallelized kernel computation
+    transpose = False
+    n, m = len(x), len(y)
+    # make sure x is larger
+    if n < m:
+        x, y = y, x
+        n, m = m, n
+        transpose = True
+    K = broadcast_kernel_parallel(kernel, x, y)
+    if transpose:
+        K = K.T
+    return K
 
 
 @nb.jit()
@@ -52,7 +75,6 @@ def compute_mmd_small_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
         2 * weights_X.T.dot(K_XY).dot(weights_Y)
     )
     return mmd
-
 
 @nb.jit()
 def compute_mmd_large_weighted_Y(X, Y, kernel, weights_Y = None):
@@ -115,7 +137,7 @@ def compute_mmd_weighted(X, Y, kernel, weights_X = None, weights_Y = None):
     Returns:
     - mmd: the weighted MMD value.
     """
-    MAX_SMALL_SIZE = 1000*1000
+    MAX_SMALL_SIZE = 10000
     # Make sure that everything has compatible sizes
     d = X.shape[1]
     assert d == Y.shape[1], f"Dimension mismatch: {d} != {Y.shape[1]}"
@@ -135,3 +157,93 @@ def compute_mmd_weighted(X, Y, kernel, weights_X = None, weights_Y = None):
     # Otherwise, use the large dataset version
     else:
         return compute_mmd_large_weighted_Y(X, Y, kernel, weights_Y)
+
+@nb.jit(parallel=True)
+def compute_mmd_entropy_large_unweighted(X, kernel):
+    """
+    Computes the "MMD entropy" of unweighted samples, E_{x,x'}[k(x,x')]
+
+    Parameters:
+    - X: numpy array of shape (n, d), first set of samples.
+    - kernel: a kernel function object with a `kernel` method.
+
+    Returns:
+    - mmds: numpy array of shape (n,), where mmds[i] is the MMD between X and X[i].
+    """
+    N = len(X)
+    mmd = np.float64(0.)
+    for idx in nb.prange(N*N):
+        i,j = idx // N, idx % N
+        add_to_mmd = np.float64(0.)
+        # Add K_XX (noting symmetry): we know i < N
+        if j <= i:
+            mul = 1 + (i != j)
+            add_to_mmd += mul * kernel(X[i], X[j])
+        mmd += add_to_mmd
+    return mmd / (np.float64(N)**2)
+
+@nb.jit()
+def compute_cross_mmd_large_weighted_Y(X, Y, kernel, weights_Y = None):
+    """
+    If MMD^2 = K_XX + K_YY - 2K_XY, this calculates the Y terms K_YY-2K_XY.
+
+    Parameters:
+    - X: numpy array of shape (n, d), first set of samples.
+    - Y: numpy array of shape (m, d), second set of samples.
+    - kernel: a kernel function object with a `kernel` method.
+    - weights_Y: numpy array of shape (m,), weights for samples in Y.
+
+    Returns:
+    - mmd: the weighted MMD value.
+    """
+    d = X.shape[1]
+    assert d == Y.shape[1], f"Dimension mismatch: {d} != {Y.shape[1]}"
+    N, M = len(X), len(Y)
+    assert N >= M, f"Dimension mismatch: {N} < {M}"
+    # If no weights are provided, use uniform weights
+    if weights_Y is None:
+        weights_Y = np.ones(M) / M
+    else:
+        assert M == len(weights_Y), f"Dimension mismatch: {M} != {len(weights_Y)}"
+    x_wt = 1 / np.float64(N)
+    cross_mmd_sq = 0
+    # Bottlenecked by the number of samples in X when calculating K_XY
+    for idx in nb.prange(N*M):
+        i,j = idx // M, idx % M
+        add_to_mmd = 0.
+        # Add K_YY (noting symmetry)
+        if i < M and j <= i:
+            y_wt_i, y_wt_j = np.float64(weights_Y[i]), np.float64(weights_Y[j])
+            mul = 1 + (i != j)
+            add_to_mmd += mul * np.float64(kernel(Y[i], Y[j])) * y_wt_i * y_wt_j
+        # Subtract 2K_XY (no symmetry). We know i < N
+        y_wt_i = weights_Y[j]
+        add_to_mmd -= 2 * kernel(X[i], Y[j]) * y_wt_i * x_wt
+        cross_mmd_sq += add_to_mmd
+    return cross_mmd_sq
+
+@nb.jit(parallel=True)
+def cached_large_mmd(data, all_nodes, all_node_weights, kernel):
+    """
+    Compute the MMD between data and all_nodes, with weights given by all_node_weights.
+
+    Parameters:
+    - data: numpy array of shape (n, d), first set of samples.
+    - all_nodes: numpy array of shape (P, m, d), second set of samples.
+    - all_node_weights: numpy array of shape (P, m), weights for samples in all_nodes.
+    - kernel: a kernel function object with a `kernel` method.
+
+    Returns:
+    - mmds: numpy array of shape (P,), where mmds[i] is the MMD between data and all_nodes[i].
+    """
+    P, m, d = all_nodes.shape
+    assert P == len(all_node_weights), f"Dimension mismatch: {P} != {len(all_node_weights)}"
+    assert m == all_node_weights.shape[1], f"Dimension mismatch: {m} != {all_node_weights.shape[1]}"
+    assert d == data.shape[1], f"Dimension mismatch: {d} != {data.shape[1]}"
+    data_mmd = compute_mmd_entropy_large_unweighted(data, kernel)
+    mmds = np.zeros(len(all_nodes))
+    for i in nb.prange(len(all_nodes)):
+        mmd_sq = data_mmd
+        mmd_sq += compute_cross_mmd_large_weighted_Y(data, all_nodes[i], kernel, weights_Y=all_node_weights[i])
+        mmds[i] = np.sqrt(mmd_sq)
+    return mmds

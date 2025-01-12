@@ -10,7 +10,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
-from tools.mmd_tools import compute_mmd_weighted
+import tools.mmd_tools as mmd_tools
 import numba as nb
 
 from .files_tools import *
@@ -65,7 +65,7 @@ def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, d
     return gif_path
 
 @nb.jit(parallel=True)
-def compute_all_mmds(all_nodes_arr, X, kernel, all_weights_arr):
+def compute_all_mmds_uncached(all_nodes_arr, X, kernel, all_weights_arr):
     M, D = all_nodes_arr.shape[-2:]
     all_nodes = all_nodes_arr.reshape(-1, M, D)
     all_weights = all_weights_arr.reshape(-1, M)
@@ -73,8 +73,23 @@ def compute_all_mmds(all_nodes_arr, X, kernel, all_weights_arr):
     for i in nb.prange(len(all_nodes)):
         Y = all_nodes[i]
         weights_Y = all_weights[i]
-        mmds[i] = compute_mmd_weighted(X, Y, kernel, weights_Y = weights_Y)
+        mmds[i] = mmd_tools.compute_mmd_weighted(X, Y, kernel, weights_Y = weights_Y)
     return mmds.reshape(all_nodes_arr.shape[:-2])
+
+def compute_all_mmds_cached(all_nodes_arr, X, kernel, all_weights_arr):
+    M, D = all_nodes_arr.shape[-2:]
+    all_nodes = all_nodes_arr.reshape(-1, M, D)
+    all_weights = all_weights_arr.reshape(-1, M)
+    mmds = mmd_tools.cached_large_mmd(X, all_nodes, all_weights, kernel)
+    return mmds.reshape(all_nodes_arr.shape[:-2])
+
+def compute_all_mmds(all_nodes_arr, X, kernel, all_weights_arr):
+    MIN_CACHED_SIZE = 1000
+    use_cache = all_nodes_arr.size > MIN_CACHED_SIZE
+    if use_cache:
+        return compute_all_mmds_cached(all_nodes_arr, X, kernel, all_weights_arr)
+    else:
+        return compute_all_mmds_uncached(all_nodes_arr, X, kernel, all_weights_arr)
 
 def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder = ""):
     R, T, M, _ = c_array_trajectory.shape

@@ -13,7 +13,26 @@ import tools.mmd_tools as mmd_tools
 import numpy as np
 from tools.utils import adjugate_matrix
 
-def stable_ms_map(centroids, data, pre_kernel):
+import numba as nb
+
+@nb.jit(parallel=True)
+def nb_max_axis0(arr):
+    """
+    Compute the maximum value along axis 0 of a NumPy array.
+
+    Args:
+        arr: A NumPy array.
+
+    Returns:
+        The maximum value along axis 0.
+    """
+    ret = np.zeros(arr.shape[1])
+    for i in nb.prange(ret.size):
+        ret[i] = np.max(arr[:,i])
+    return ret
+
+@nb.jit()
+def stable_ms_log_kde(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
 
@@ -29,8 +48,7 @@ def stable_ms_map(centroids, data, pre_kernel):
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
     pre_kernel_array = mmd_tools.broadcast_kernel(pre_kernel, data, centroids) # (N, M)
-
-    pre_kernel_offset = np.max(pre_kernel_array, axis=0) # (M,)
+    pre_kernel_offset = nb_max_axis0(pre_kernel_array) # (M,)
 
     # Compute the weights (using broadcasting)
     weights = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
@@ -39,37 +57,16 @@ def stable_ms_map(centroids, data, pre_kernel):
     a = weights.T.dot(data) # (M, d)
     b = np.sum(weights, axis=0) # (M,)
 
-    # Return the mean shift map value
-    return a / b[:, np.newaxis] # (M, d)
+    stable_ms = np.empty_like(a)
+    for i in range(a.shape[0]):
+        stable_ms[i] = a[i] / b[i] # (M, d)
 
-def stable_log_kde(centroids, data, pre_kernel):
-    """
-    Compute the stable mean shift map using pre-kernel values and array operations.
-
-    Args:
-        x: The input scalar.
-        n_array: A NumPy array of scalars (e.g., n_list).
-        pre_kernel: A function that computes the pre-kernel values.
-
-    Returns:
-        The updated position after applying the mean shift map.
-    """
-
-    # Compute pre-kernel values as a NumPy array
-    # Assume pre_kernel can handle array input
-    pre_kernel_array = mmd_tools.broadcast_kernel(pre_kernel, data, centroids) # (N, M)
-    pre_kernel_offset = np.max(pre_kernel_array, axis=0) # (M,)
-
-    # Compute the weights (using broadcasting)
-    weights = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
-
-    # Compute the weighted sum of the differences
-    b = np.sum(weights, axis=0) # (M,)
+    log_kde = pre_kernel_offset+np.log(b) # (M,)
 
     # Return the mean shift map value
-    return pre_kernel_offset+np.log(b) # (M,)
+    return stable_ms, log_kde
 
-
+@nb.jit()
 def average_x_v(inverse_kernel_mat, log_w, kde_means):
     """
     Compute the weighted mean of vectors using the Log-Sum-Exp trick for stability.
@@ -96,7 +93,9 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
     b = np.sum(KW, axis=1)
 
     # Return the ratio
-    ret = np.divide(a, b[:,np.newaxis], where=b[:,np.newaxis] != 0.0)
+    valid_b_idxs = b != 0.0
+    ret = np.empty_like(a)
+    ret[valid_b_idxs] = np.divide(a[valid_b_idxs], b[valid_b_idxs][:,np.newaxis])
 
     for m in range(inverse_kernel_mat.shape[0]):
         nnzeros = np.where(np.abs(inverse_kernel_mat[m]) > 0.0)[0]
@@ -107,6 +106,11 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
             ret[m] = kde_means[nnzeros[0], :]
 
     return ret
+
+@nb.jit(parallel=True)
+def kernel_avg(kernel, pts, avg_pts):
+    return mmd_tools.broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/pts.shape[0]
+
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
         super().__init__(params)
@@ -123,7 +127,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         kernel = self.kernel_scheduler.GetKernel()
 
         K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
-        mu_array = mmd_tools.broadcast_kernel(kernel, c_array, x_array).mean(axis=1)
+        mu_array = kernel_avg(kernel, c_array, x_array)
 
         weights_array = np.linalg.solve(K_matrix, mu_array)
 
@@ -139,8 +143,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
 
         K_inv_matrix = self.inv_K_fcn(K_matrix)
-        ms_array = stable_ms_map(c_array, x_array, pre_kernel)
-        log_v_0_array = stable_log_kde(c_array, x_array, pre_kernel)
+        ms_array, log_v_0_array = stable_ms_log_kde(c_array, x_array, pre_kernel)
 
         c_tplus1_array = (1-self.dilation)*c_array + self.dilation*average_x_v(
             K_inv_matrix, log_v_0_array, ms_array)

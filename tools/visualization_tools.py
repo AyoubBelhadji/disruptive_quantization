@@ -197,32 +197,38 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
 def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder = ""):
     R, _, M, _ = c_array_trajectory.shape
 
-    mmd_folder = os.path.join("figures", config_folder , experiment_name, "plots")
-    os.makedirs(mmd_folder, exist_ok=True)
+    mmd_folder_plots = os.path.join("figures", config_folder , experiment_name, "plots")
+    os.makedirs(mmd_folder_plots, exist_ok=True)
+    mmd_folder_serial = os.path.join("experiments", "sandbox", config_folder , experiment_name)
+    os.makedirs(mmd_folder_serial, exist_ok=True)
 
     mmd_values = compute_all_mmds(c_array_trajectory, data_array, kernel, w_array)
     logdets = compute_all_kernel_logdets(c_array_trajectory, kernel)
+    # Save the mmd_values and logdets
+    np.save(os.path.join(mmd_folder_serial, "mmd_values.npy"), mmd_values)
+    np.save(os.path.join(mmd_folder_serial, "logdets.npy"), logdets)
+    print("MMD values and logdets saved to ", mmd_folder_serial)
 
     w_sums = w_array.sum(axis=2)
     # Plot the sum of weights over iterations
-    weight_sum_plot(alg_name, mmd_folder, w_sums)
+    weight_sum_plot(alg_name, mmd_folder_plots, w_sums)
 
     for r in range(R):
         for m in range(M):
             # Plot the evolution of each weight
-            weight_evolution_plot(alg_name, w_array, mmd_folder, r, m)
+            weight_evolution_plot(alg_name, w_array, mmd_folder_plots, r, m)
 
     for r in range(R):
         # Plot MMD evolution and the value of each weight
-        mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder, r)
+        mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder_plots, r)
 
     for r in range(R):
         # Plot MMD evolution and the sign of each weight
-        mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder, r)
+        mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder_plots, r)
 
     # Plot MMD over iterations for all repetitions
-    mmd_all_plot(alg_name, mmd_values, mmd_folder)
+    mmd_all_plot(alg_name, mmd_values, mmd_folder_plots)
 
     # Plot logdet over iterations for all repetitions
-    logdet_all_plot(alg_name, logdets, mmd_folder)
+    logdet_all_plot(alg_name, logdets, mmd_folder_plots)
     plt.close()

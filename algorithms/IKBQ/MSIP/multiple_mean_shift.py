@@ -109,7 +109,7 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
 
 @nb.jit(parallel=True)
 def kernel_avg(kernel, pts, avg_pts):
-    return mmd_tools.broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/pts.shape[0]
+    return mmd_tools.broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/avg_pts.shape[0]
 
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):

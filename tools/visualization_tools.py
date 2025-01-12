@@ -65,15 +65,15 @@ def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, d
     return gif_path
 
 @nb.jit(parallel=True)
-def compute_all_mmds(all_nodes_arr, Y, kernel, all_weights_arr):
+def compute_all_mmds(all_nodes_arr, X, kernel, all_weights_arr):
     M, D = all_nodes_arr.shape[-2:]
     all_nodes = all_nodes_arr.reshape(-1, M, D)
     all_weights = all_weights_arr.reshape(-1, M)
     mmds = np.empty(len(all_nodes))
     for i in nb.prange(len(all_nodes)):
-        X = all_nodes[i]
-        weights_X = all_weights[i]
-        mmds[i] = compute_mmd_weighted(X, Y, kernel, weights_X)
+        Y = all_nodes[i]
+        weights_Y = all_weights[i]
+        mmds[i] = compute_mmd_weighted(X, Y, kernel, weights_Y = weights_Y)
     return mmds.reshape(all_nodes_arr.shape[:-2])
 
 def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder = ""):

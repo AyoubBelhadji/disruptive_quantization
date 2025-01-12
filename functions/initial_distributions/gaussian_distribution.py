@@ -11,7 +11,7 @@ import numpy as np
 
 
 class GaussianDistribution:
-    def __init__(self, params, rng):
+    def __init__(self, params, rng: np.random.Generator):
         """
         Initialize the GaussianDistribution class with parameters.
 

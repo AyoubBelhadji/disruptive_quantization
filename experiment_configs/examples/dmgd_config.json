@@ -1,4 +1,5 @@
 {
+    "rng_seed": 74291,
     "algorithm_name": "DiscrepancyMinimizingGradientDescent",
     "params": {
         "hyperparams": {

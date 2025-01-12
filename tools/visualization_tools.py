@@ -10,6 +10,8 @@ Also also created on Mon Nov 18 6:22:10 2024
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
+from tools.mmd_tools import compute_mmd_weighted
+import numba as nb
 
 from .files_tools import *
 #from tqdm import tqdm
@@ -62,51 +64,17 @@ def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, d
 
     return gif_path
 
-
-
-
-
-def compute_mmd(X, Y, kernel):
-
-    K_XX = kernel.kernel(X, X)
-    K_YY = kernel.kernel(Y, Y)
-    K_XY = kernel.kernel(X, Y)
-
-    mmd = np.mean(K_XX) + np.mean(K_YY) - 2 * np.mean(K_XY)
-    return mmd
-
-
-def compute_mmd_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
-    """
-    Computes the weighted MMD between two sets of samples X and Y.
-
-    Parameters:
-    - X: numpy array of shape (n, d), first set of samples.
-    - Y: numpy array of shape (m, d), second set of samples.
-    - kernel: a kernel function object with a `kernel` method.
-    - weights_X: numpy array of shape (n,), weights for samples in X (optional, defaults to uniform).
-    - weights_Y: numpy array of shape (m,), weights for samples in Y (optional, defaults to uniform).
-
-    Returns:
-    - mmd: the weighted MMD value.
-    """
-    if weights_X is None:
-        weights_X = np.ones(len(X)) / len(X)
-    if weights_Y is None:
-        weights_Y = np.ones(len(Y)) / len(Y)
-
-    K_XX = kernel(X, X)
-    K_YY = kernel(Y, Y)
-    K_XY = kernel(X, Y)
-
-    # Weighted means
-    mmd = (
-        weights_X.T.dot(K_XX).dot(weights_X) +
-        weights_Y.T.dot(K_YY).dot(weights_Y) -
-        2 * weights_X.T.dot(K_XY).dot(weights_Y)
-    )
-    return mmd
-
+@nb.jit(parallel=True)
+def compute_all_mmds(all_nodes_arr, X, kernel, all_weights_arr):
+    M, D = all_nodes_arr.shape[-2:]
+    all_nodes = all_nodes_arr.reshape(-1, M, D)
+    all_weights = all_weights_arr.reshape(-1, M)
+    mmds = np.empty(len(all_nodes))
+    for i in nb.prange(len(all_nodes)):
+        Y = all_nodes[i]
+        weights_Y = all_weights[i]
+        mmds[i] = compute_mmd_weighted(X, Y, kernel, weights_Y = weights_Y)
+    return mmds.reshape(all_nodes_arr.shape[:-2])
 
 def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder = ""):
     R, T, M, _ = c_array_trajectory.shape
@@ -115,10 +83,7 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
     mmd_folder = os.path.join("figures", config_folder , experiment_name, "plots")
     os.makedirs(mmd_folder, exist_ok=True)
 
-    for r in range(R):
-        for t in range(T):
-            mmd_values[r, t] = compute_mmd_weighted(data_array, c_array_trajectory[r, t], kernel, None, w_array[r,t])
-
+    mmd_values = compute_all_mmds(c_array_trajectory, data_array, kernel, w_array)
     w_sums = w_array.sum(axis=2)
     plt.figure()
     for r in range(R):
@@ -203,10 +168,9 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
     plt.yscale('log')
     plt.legend()
     plt.grid()
-    plt.show()
-
     mmd_plot_path = os.path.join(mmd_folder, "mmd_evolution.png")
     plt.savefig(mmd_plot_path)
+    plt.show()
     plt.close()
 
     return mmd_plot_path

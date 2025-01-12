@@ -1,4 +1,5 @@
 {
+    "rng_seed": 111111,
     "algorithm_name": "WassersteinFisherRao",
     "params": {
         "hyperparams": {
@@ -7,8 +8,6 @@
         "solution": {
             "K": 3,
             "freeze_init": 0
-        },
-        "hyperparams": {
         },
         "initial_distribution": {
             "distribution_name": "data_distribution",

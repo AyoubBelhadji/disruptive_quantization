@@ -9,12 +9,12 @@ Also created on Mon Nov 26 11:22:00 2024
 import numpy as np
 
 class KmeansPlusPlusDistribution:
-    def __init__(self, params):
+    def __init__(self, _, rng: np.random.Generator):
         """
         Initialize the GreedyMaxDistanceDistribution class with (unused) parameters.
 
         """
-        self.params = params
+        self.rng = rng
 
     def generate_samples(self, M, data_array):
         """
@@ -24,7 +24,7 @@ class KmeansPlusPlusDistribution:
         N_, d = data_array.shape
         # Initialize the set of centers
         centers = np.empty((M, d))
-        centers[0] = data_array[np.random.choice(N_)]
+        centers[0] = data_array[self.rng.choice(N_)]
         dists = np.empty((M-1,N_)) # We only have to search M-1 times
         weights = np.empty((N_,))
         for i in range(1, M):
@@ -34,6 +34,6 @@ class KmeansPlusPlusDistribution:
             np.min(dists[:i], axis=0, out=weights)
             weights[:] /= np.sum(weights)
             # Choose the next center with probability proportional to the squared-distance to closest node
-            centers[i] = data_array[np.random.choice(N_, p=weights)]
+            centers[i] = data_array[self.rng.choice(N_, p=weights)]
 
         return centers

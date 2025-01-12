@@ -1,4 +1,5 @@
 {
+    "rng_seed": 129032,
     "algorithm_name": "KmeansClustering",
     "params": {
         "hyperparams": {

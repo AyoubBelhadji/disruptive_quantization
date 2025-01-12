@@ -11,7 +11,7 @@ import json
 import os
 import pickle
 from functions.kernels.kernel_bandwidth_scheduler import KernelBandwidthScheduleFactory
-
+import numpy as np
 
 def create_folder_if_needed(folder_path):
     """
@@ -85,6 +85,11 @@ def categorize_params(config, function_map):
     """Flatten parameters from config into a single-level dictionary without text descriptions."""
     params = {}
 
+    # Use a random number generator with seed if provided
+    rng_seed = config.get('rng_seed',None)
+    params['rng'] = np.random.default_rng(rng_seed)
+    params['rng_seed'] = rng_seed
+
     # Load any constant hyperparameters
     hyperparams = config['params'].get('hyperparams', {})
     params.update(hyperparams)
@@ -114,7 +119,7 @@ def categorize_params(config, function_map):
     params.update(intial_distribution_params)
 
     params['initial_distribution'] = initial_distribution_class(
-        intial_distribution_params)
+        intial_distribution_params, params.get('rng'))
 
     kernel_info = config['params'].get('kernel', {})
     kernel_params = kernel_info.get('params', {})
@@ -130,12 +135,12 @@ def categorize_params(config, function_map):
         noise_schedule_function_name = noise_schedule_function_info.get(
             'noise_schedule_function_name')
         noise_schedule_function_class = function_map[noise_schedule_function_name]
-        noise_schedule_function_params = initial_distribution_info.get(
+        noise_schedule_function_params = noise_schedule_function_info.get(
             'params', {})
         params.update(noise_schedule_function_params)
 
         params['noise_schedule_function'] = noise_schedule_function_class(
-            noise_schedule_function_params)
+            noise_schedule_function_params, params['rng'])
 
     # Process and flatten domain parameters directly
     domain_info = config['params'].get('domain', {})

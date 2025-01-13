@@ -12,6 +12,7 @@ import os, argparse
 # Import relevant functions
 from functions.kernels.gaussian_kernel import *
 from functions.kernels.matern_kernel import *
+from functions.kernels.inverse_multiquadric_kernel import *
 from functions.kernels.kernel_bandwidth_scheduler import *
 from functions.initial_distributions.gaussian_distribution import *
 from functions.initial_distributions.data_distribution import *
@@ -29,6 +30,7 @@ function_map = {
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": GaussianKernel,
     "matern_kernel": MaternKernel,
+    "inverse_multiquadric_kernel": InverseMultiQuadricKernel,
     "data_distribution": DataDistribution,
     "kmeans++": KmeansPlusPlusDistribution,
     "constant_kernel_bandwidth": ConstantKernelBandwidth,
@@ -42,6 +44,8 @@ parser = argparse.ArgumentParser(description="Run quantization experiments")
 parser.add_argument("--no-viz", help="No visualization (default generates gif + MMD)", action="store_true")
 parser.add_argument("-g", "--gif",
                     help="Just visualize gif", action="store_true")
+parser.add_argument("-m", "--mmd-viz",
+                    help="Just visualize mmd", action="store_true")
 parser.add_argument(
     "--dir", help="Configuration subdirectory in ./ or ./experiment_configs", type=str, default='examples')
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
@@ -52,7 +56,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_viz = args.no_viz
     just_gif = args.gif
-    show_gif_visualization = just_gif or not no_viz
+    show_gif_visualization = (just_gif or not no_viz) and not args.mmd_viz
     show_mmd_visualization = not (just_gif or no_viz)
     config_subdir = args.dir
     debug = args.debug
@@ -103,7 +107,10 @@ if __name__ == "__main__":
                     data = data[:params["N"]]
             except Exception as e:
                 print(f"Failed to load dataset for {config_filename}: {e}")
-                continue
+                if debug:
+                    raise e
+                else:
+                    continue
 
             # Example metadata
             experiment_metadata = {

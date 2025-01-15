@@ -26,9 +26,9 @@ def broadcast_kernel(kernel, x, y):
     MIN_PARALLEL = 1001
     assert x.shape[1] == y.shape[1], f"Dimension mismatch: {x.shape[1]} != {y.shape[1]}"
     if len(x) < MIN_PARALLEL and len(y) < MIN_PARALLEL:
-        x = np.expand_dims(x, axis=1)
-        y = np.expand_dims(y, axis=0)
-        return kernel(x,y)
+        x_expand = np.expand_dims(x, axis=1)
+        y_expand = np.expand_dims(y, axis=0)
+        return kernel(x_expand,y_expand)
     # Perform parallelized kernel computation
     transpose = False
     n, m = len(x), len(y)
@@ -55,9 +55,17 @@ def compute_mmd(X, Y, kernel):
 @nb.jit()
 def compute_mmd_small_weighted(X, Y, kernel, weights_X=None, weights_Y=None):
     """
-    Computes the MMD between two sets of samples X and Y. This function is optimized for small datasets.
+    Computes the weighted MMD between two small sets of samples X and Y, which might be weighted.
 
-    See @compute_mmd_weighted for the parameters and return value.
+    Parameters:
+    - X: numpy array of shape (n, d), first set of samples.
+    - Y: numpy array of shape (m, d), second set of samples.
+    - kernel: a kernel function object with a `kernel` method.
+    - weights_X: numpy array of shape (n,), weights for samples in X (optional, defaults to uniform).
+    - weights_Y: numpy array of shape (m,), weights for samples in Y (optional, defaults to uniform).
+
+    Returns:
+    - mmd: the weighted MMD value.
     """
     if weights_X is None:
         weights_X = np.ones(len(X)) / len(X)
@@ -223,7 +231,7 @@ def compute_cross_mmd_large_weighted_Y(X, Y, kernel, weights_Y = None):
     return cross_mmd_sq
 
 @nb.jit(parallel=True)
-def cached_large_mmd(data, all_nodes, all_node_weights, kernel):
+def mmd_array_cached(all_nodes, all_node_weights, data, kernel):
     """
     Compute the MMD between data and all_nodes, with weights given by all_node_weights.
 
@@ -243,7 +251,76 @@ def cached_large_mmd(data, all_nodes, all_node_weights, kernel):
     data_mmd = compute_mmd_entropy_large_unweighted(data, kernel)
     mmds = np.zeros(len(all_nodes))
     for i in nb.prange(len(all_nodes)):
+        Y, weights_Y = all_nodes[i], all_node_weights[i]
         mmd_sq = data_mmd
-        mmd_sq += compute_cross_mmd_large_weighted_Y(data, all_nodes[i], kernel, weights_Y=all_node_weights[i])
+        mmd_sq += compute_cross_mmd_large_weighted_Y(data, Y, kernel, weights_Y=weights_Y)
         mmds[i] = np.sqrt(mmd_sq)
     return mmds
+
+@nb.jit(parallel=True)
+def mmd_array_uncached(all_nodes, all_node_weights, data, kernel):
+    """
+    Compute the MMD between data and all_nodes, with weights given by all_node_weights.
+
+    Parameters:
+    - data: numpy array of shape (n, d), first set of samples.
+    - all_nodes: numpy array of shape (P, m, d), second set of samples.
+    - all_node_weights: numpy array of shape (P, m), weights for samples in all_nodes.
+    - kernel: a kernel function object with a `kernel` method.
+
+    Returns:
+    - mmds: numpy array of shape (P,), where mmds[i] is the MMD between data and all_nodes[i].
+    """
+    P, m, d = all_nodes.shape
+
+    # Check dimensions
+    assert P == len(all_node_weights), f"Dimension mismatch: {P} != {len(all_node_weights)}"
+    assert m == all_node_weights.shape[1], f"Dimension mismatch: {m} != {all_node_weights.shape[1]}"
+    assert d == data.shape[1], f"Dimension mismatch: {d} != {data.shape[1]}"
+
+    # Compute MMDs in parallel
+    mmds = np.zeros(len(all_nodes))
+    for i in nb.prange(len(all_nodes)):
+        Y, weights_Y = all_nodes[i], all_node_weights[i]
+        mmd_sq = compute_mmd_weighted(data, Y, kernel, weights_Y=weights_Y)
+        mmds[i] = np.sqrt(mmd_sq)
+    return mmds
+
+@nb.jit(parallel=True)
+def compute_all_kernel_logdets(all_nodes, kernel):
+    """
+    Compute the log-determinant of the kernel matrix for each set of nodes.
+
+    Parameters:
+    - all_nodes: numpy array of shape (..., m, d), set of samples.
+    - kernel: a kernel function object with a `kernel` method.
+
+    Returns:
+    - logdets: numpy array of shape (...), where logdets[i] is the log-determinant of the kernel matrix for all_nodes[i].
+    """
+    logdets = np.zeros(len(all_nodes))
+    for i in nb.prange(len(all_nodes)):
+        Y = all_nodes[i]
+        K = broadcast_kernel(kernel, Y, Y)
+        logdets[i] = np.linalg.slogdet(K)[1]
+    return logdets
+
+def reshape_wrapper(nodes, node_weights, function, *args):
+    prev_shape = nodes.shape
+    # Flatten the first dimensions
+    nodes = nodes.reshape(-1, prev_shape[-2], prev_shape[-1])
+    if node_weights is not None:
+        node_weights = node_weights.reshape(-1, prev_shape[-2])
+        result = function(nodes, node_weights, *args)
+    else:
+        result = function(nodes, *args)
+    return result.reshape(prev_shape[:-2])
+
+def mmd_array(data, all_nodes, all_node_weights, kernel, cached):
+    mmd_fcn_arr = mmd_array_cached if cached else mmd_array_uncached
+    mmds = reshape_wrapper(all_nodes, all_node_weights, mmd_fcn_arr, data, kernel)
+    return mmds
+
+def logdet_array(all_nodes, kernel):
+    logdets = reshape_wrapper(all_nodes, None, compute_all_kernel_logdets, kernel)
+    return logdets

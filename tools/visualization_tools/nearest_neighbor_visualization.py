@@ -23,23 +23,30 @@ def to_BW_images(array):
 def get_assigned_label(neighbors, labels):
     return np.argmax(np.bincount(labels[neighbors]))
 
+def style_nearest_neighbor_axis(ax):
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    ax.get_xaxis().set_ticks([])
+    ax.get_yaxis().set_ticks([])
+
 def image_nearest_neighbors(nodes, data, labels, neighbor_idxs, node_labels, title):
     use_labels = labels is not None
     N, num_neighbors = neighbor_idxs.shape
     node_imgs = to_BW_images(nodes)
-    fig, axes = plt.subplots(N, num_neighbors+1)
+    fig, axes = plt.subplots(N, num_neighbors+1, figsize=(num_neighbors+1, N+2))
     fig.suptitle(title)
     for i in range(N):
         neighbors = data[neighbor_idxs[i]]
         node_img, neighbor_imgs = node_imgs[i], to_BW_images(neighbors)
         axes[i, 0].imshow(node_img, cmap='gray')
         title = f"Node {i}" + (f" ({node_labels[i]})" if use_labels else "")
+        style_nearest_neighbor_axis(axes[i, 0])
         axes[i, 0].set_title(title)
         for j in range(num_neighbors):
             axes[i, j+1].imshow(neighbor_imgs[j], cmap='gray')
+            style_nearest_neighbor_axis(axes[i, j+1])
             title = f"({labels[neighbor_idxs[i, j]]})" if use_labels else ""
             axes[i, j+1].set_title(title)
-    plt.show()
     return node_labels
 
 def labelled_nearest_neighbors(nodes, data, labels, num_neighbors):
@@ -63,15 +70,24 @@ def plot_nearest_neighbors(nodes, weights, data, labels, r, alg_name, plot_path,
         # Plot nearest neighbors
         image_nearest_neighbors(nodes, data, labels, neighbor_idxs, node_labels, plot_title)
         plt.savefig(os.path.join(plot_path, f"nearest_neighbors_r_{r}.png"))
+        plt.show()
 
     # Plot distribution of assigned labels compared to true distribution of assigned labels
     if node_labels is not None:
-        fig, ax = plt.subplots()
         # Find offset to align the histograms according to the number of unique labels
-        num_unique = len(np.unique(labels))
-        offset = 0.025 * num_unique
-        ax.hist(labels+offset, alpha=0.5, label="True labels", density=True)
-        ax.hist(node_labels-offset, alpha=0.5, label="Assigned labels", weights=weights, density=True)
+        data_freqs = np.bincount(labels)/len(labels)
+        K = len(data_freqs)
+        label_locations = np.arange(K)
+        node_freqs = np.bincount(node_labels, weights=weights/weights.sum(), minlength=K)
+        legend_labels = {"True labels": data_freqs, "Assigned labels": node_freqs}
+        width = 0.25
+        multiplier = 0
+
+        fig, ax = plt.subplots(layout="constrained")
+        for attr, freq in legend_labels.items():
+            offset = width*multiplier
+            ax.bar(label_locations + offset, freq, width, label=attr)
+            multiplier += 1
         ax.set_title(f"Assigned labels distribution, r={r}, {alg_name}")
         ax.legend()
         plt.savefig(os.path.join(plot_path, f"assigned_labels_r_{r}.png"))

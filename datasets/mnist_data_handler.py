@@ -34,11 +34,11 @@ def load_or_download_mnist(data_dir="mnist", pickle_file=None):
         print("Downloading MNIST dataset...")
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
         ])
         mnist = datasets.MNIST(data_dir, train=True, download=True, transform=transform)
         images = mnist.data
-        images = images.reshape(images.shape[0], -1).numpy()
+        # Reshape images to 1D arrays with values in [0, 1]
+        images = images.reshape(images.shape[0], -1).numpy()/255
         labels = mnist.targets.numpy()
 
         if pickle_file:

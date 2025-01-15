@@ -128,7 +128,7 @@ if __name__ == "__main__":
             data, labels = data_loader.get_data(
                 params["dataset_name"], params.get("N", 0), debug
             )
-
+            params["N"] = data.shape[0]
             # Example metadata
             experiment_metadata = {"description": f"Experiment from {config_filename}"}
 

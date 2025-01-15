@@ -58,7 +58,7 @@ class DataLoader:
         if not os.path.exists(dataset_path):
             raise FileNotFoundError(
                 f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
-
+        print(f"Loading dataset '{dataset_name}': component {component}...")
         try:
             with open(dataset_path, 'rb') as f:
                 data_dict = pickle.load(f)

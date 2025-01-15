@@ -15,39 +15,6 @@ from datetime import datetime
 import importlib
 import numpy as np
 
-
-# class ExperimentManager:
-#     def __init__(self):
-#         self.experiments = {}
-
-#     def load_experiments(self, folders):
-#         # Load experiments from multiple folders and combine them for comparison
-#         for folder in folders:
-#             pkl_file_path = os.path.join(folder, 'experiment_data_with_metadata.pkl')
-#             with open(pkl_file_path, 'rb') as f:
-#                 experiments = pickle.load(f)
-#             self.experiments.update(experiments)
-#         print(f"Loaded experiments from {len(folders)} folders")
-
-#     def compare_results(self, save_pdf=False, pdf_file_path=None):
-#         # Compare results of loaded experiments
-#         fig, axs = plt.subplots(len(self.experiments), 1, figsize=(10, 5 * len(self.experiments)))
-#         if len(self.experiments) == 1:
-#             axs = [axs]
-
-#         for i, (name, experiment) in enumerate(self.experiments.items()):
-#             result = experiment['data']
-#             params = experiment['params']
-#             metadata = experiment['metadata']
-#             axs[i].plot(result)
-#             axs[i].set_title(f"{metadata['experiment_name']} (params: {params}, date: {metadata['date']})")
-
-#         plt.tight_layout()
-#         if save_pdf and pdf_file_path:
-#             plt.savefig(pdf_file_path)
-#         else:
-#             plt.show()
-
 from algorithms.base_algorithm import AbstractAlgorithm
 
 # Load and initialize algorithm
@@ -148,19 +115,6 @@ def get_available_algorithms(directory='algorithms', debug=False):
                     print(f"Error importing {full_module_name}: {e}")
     return algorithms
 
-# def get_available_algorithms(directory='algorithms'):
-#     algorithms = {}
-#     for file in os.listdir(directory):
-#         if file.endswith('.py') and file != '__init__.py' and file != 'base_algorithm.py' and file != 'sub_algorithm.py':
-#             module_name = file[:-3]
-#             module = importlib.import_module(f'{directory}.{module_name}')
-#             class_name = ''.join([part.capitalize() for part in module_name.split('_')])
-#             algorithm_class = getattr(module, class_name)
-#             if issubclass(algorithm_class, AbstractAlgorithm):
-#                 algorithms[class_name] = algorithm_class
-#     return algorithms
-
-
 def get_next_experiment_id():
     counter_file = 'experiments/experiment_counter.txt'
 
@@ -222,9 +176,6 @@ class SimulationManager:
             experiment_folder, 'experiment_data_with_metadata.pkl')
         npy_file_path = os.path.join(
             experiment_folder, 'experiment_data_with_metadata.npy')
-        pdf_file_path = os.path.join(
-            experiment_folder, 'experiment_results.pdf')
-
         with open(pkl_file_path, 'wb') as f:
             pickle.dump(self.experiments, f)
         print(f"Experiments saved in {pkl_file_path}")

@@ -58,7 +58,7 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
     plt.close(fig)  # Close the figure to avoid displaying static plots
 
 
-def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format="gif", limit_margin=0.1):
+def centroid_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format="gif", limit_margin=0.1):
     R = c_array_trajectory.shape[0]
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
@@ -193,7 +193,7 @@ def calculate_mmd_and_logdets(experiment_name, c_array_trajectory, w_array, data
     return mmd_values, logdets
 
 
-def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder=""):
+def evolution_weights_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder=""):
     R, _, M, _ = c_array_trajectory.shape
 
     mmd_folder_plots = os.path.join(

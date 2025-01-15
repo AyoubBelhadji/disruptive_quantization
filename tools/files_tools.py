@@ -77,7 +77,7 @@ class DataLoader:
     def get_data(self, dataset_name, N, debug):
         dataset_name = dataset_name + '.pkl'
         try:
-            data = self.load_dataset(dataset_name, 'data')
+            data, labels = self.load_dataset(dataset_name, 'data')
             print(f"Loaded dataset shape for {dataset_name}: {data.shape}")
             if N > 0:
                 print(f"Using subset of size {N}")
@@ -88,7 +88,7 @@ class DataLoader:
                 raise e
             else:
                 return None
-        return data
+        return data, labels
 
 def load_config(file_path):
     if not os.path.exists(file_path):

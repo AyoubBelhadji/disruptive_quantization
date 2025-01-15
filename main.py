@@ -186,7 +186,7 @@ if __name__ == "__main__":
                         print("No labels available for nearest neighbors visualization")
                         continue
                     nearest_neighbors_params = params.get("nearest_neighbors", {})
-                    visualization_tools.visualize_and_save_nearest_neighbors(
+                    visualization_tools.nearest_neighbors(
                         algorithm_name,
                         experiment_full_id,
                         rand_algo.c_array_trajectory,

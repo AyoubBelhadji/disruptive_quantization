@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter, ImageMagickWriter, FFMpegWriter
 import tools.mmd_tools as mmd
 
-from .files_tools import *
+import os
+from tools.files_tools import create_folder_if_needed
+
 
 def expand_limits(min, max, factor):
     """
@@ -20,6 +22,7 @@ def expand_limits(min, max, factor):
     """
     delta = max - min
     return min - factor * delta, max + factor * delta
+
 
 def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r, alg_name, file_format, **ax_kwargs):
     T = centroids.shape[0]
@@ -42,7 +45,8 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
     create_folder_if_needed(folder_name)
 
     # Save animation as a GIF
-    gif_path = os.path.join(folder_name, f"particle_evolution_{r}." + file_format)
+    gif_path = os.path.join(
+        folder_name, f"particle_evolution_{r}." + file_format)
     writer_classes = [FFMpegWriter, ImageMagickWriter, PillowWriter]
     for writer_class in writer_classes:
         try:
@@ -54,7 +58,7 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
     plt.close(fig)  # Close the figure to avoid displaying static plots
 
 
-def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format = "gif", limit_margin=0.1):
+def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format="gif", limit_margin=0.1):
     R = c_array_trajectory.shape[0]
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
@@ -65,13 +69,15 @@ def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, d
         create_dynamics_gif(data_array, centroids_r, config_folder,
                             experiment_name, r, alg_name, file_format, xlim=xlims, ylim=ylims)
 
+
 def weight_sum_plot(alg_name, mmd_folder, w_sums):
     """ Plot the sum of weights over iterations for all repetitions """
     R, T = w_sums.shape
     fig, ax = plt.subplots()
     for r in range(R):
         ax.plot(range(T), w_sums[r], label=f"r={r}", lw=3)
-    ax.set(title=f"Sum of weights, {alg_name}", xlabel="t", ylabel="Sum of weights")
+    ax.set(title=f"Sum of weights, {alg_name}",
+           xlabel="t", ylabel="Sum of weights")
     ax.legend()
     fig.savefig(os.path.join(mmd_folder, "sum_of_weights.png"))
     plt.show()
@@ -82,7 +88,8 @@ def weight_evolution_plot(alg_name, w_array, mmd_folder, r, m):
     T = w_array.shape[1]
     fig, ax = plt.subplots()
     ax.plot(range(T), w_array[r, :, m], label=f"m={m}")
-    ax.set(title=f"Plot of weights, r={r}, m={m}, {alg_name}", xlabel="t", ylabel="w_array", xscale='log')
+    ax.set(title=f"Plot of weights, r={r}, m={m}, {
+           alg_name}", xlabel="t", ylabel="w_array", xscale='log')
     ax.legend()
     ax.grid(True)
 
@@ -103,7 +110,8 @@ def mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder, r):
     for m in range(M):
         ax = axes[m+1]  # Select the current subplot
         ax.plot(range(T), w_array[r, :, m], label=f"m={m}", color="black")
-        ax.set(title=f"Evolution of weights, r={r}, m={m}, {alg_name}", xlabel="t", xscale='log')
+        ax.set(title=f"Evolution of weights, r={r}, m={
+               m}, {alg_name}", xlabel="t", xscale='log')
         ax.legend()
         ax.grid(True)
 
@@ -121,7 +129,8 @@ def mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder, r):
         M+1, 1, figsize=(8, (M+1) * 5))  # 1 row, M+1 columns
     ax = axes[0]
     ax.plot(range(T), mmd_values[r], label="MMD", color="black")
-    ax.set(title=f'Evolution of MMD with weight signs, r={r}, {alg_name}', xscale='log', xlabel="t")
+    ax.set(title=f'Evolution of MMD with weight signs, r={
+           r}, {alg_name}', xscale='log', xlabel="t")
     for m in range(M):
         ax = axes[m+1]  # Select the current subplot
         ax.plot(range(T), np.sign(
@@ -144,7 +153,8 @@ def mmd_all_plot(alg_name, mmd_values, mmd_folder):
     fig, ax = plt.subplots()
     for r in range(R):
         ax.plot(range(T), mmd_values[r], label=f"r={r}", lw=3)
-    ax.set(title=f"MMD evolution over iterations, {alg_name}", xlabel="Iteration", ylabel="MMD", xscale='log', yscale='log')
+    ax.set(title=f"MMD evolution over iterations, {
+           alg_name}", xlabel="Iteration", ylabel="MMD", xscale='log', yscale='log')
     ax.legend()
     ax.grid()
     mmd_plot_path = os.path.join(mmd_folder, "mmd_evolution.png")
@@ -158,18 +168,22 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
     fig, ax = plt.subplots()
     for r in range(R):
         plt.plot(range(T), logdets[r], label=f"r={r}", lw=3)
-    ax.set(title=f"Logdet evolution over iterations, {alg_name}", xlabel="Iteration", ylabel="Logdet", xscale='log')
+    ax.set(title=f"Logdet evolution over iterations, {
+           alg_name}", xlabel="Iteration", ylabel="Logdet", xscale='log')
     ax.legend()
     ax.grid()
     logdet_plot_path = os.path.join(mmd_folder, "logdet_evolution.png")
     fig.savefig(logdet_plot_path)
     plt.show()
 
+
 def calculate_mmd_and_logdets(experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder, cached_MMD=True):
-    mmd_folder_serial = os.path.join("experiments", "sandbox", config_folder , experiment_name)
+    mmd_folder_serial = os.path.join(
+        "experiments", "sandbox", config_folder, experiment_name)
     os.makedirs(mmd_folder_serial, exist_ok=True)
 
-    mmd_values = mmd.mmd_array(data_array, c_array_trajectory, w_array, kernel, cached_MMD)
+    mmd_values = mmd.mmd_array(
+        data_array, c_array_trajectory, w_array, kernel, cached_MMD)
     logdets = mmd.logdet_array(c_array_trajectory, kernel)
 
     # Save the mmd_values and logdets

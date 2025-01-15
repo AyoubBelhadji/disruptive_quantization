@@ -7,17 +7,15 @@ import shutil
 def pickleFileExists(pickle_file):
     return pickle_file and os.path.exists(pickle_file)
 
-def load_or_download_mnist(data_dir="mnist", x_pickle_file=None, y_pickle_file=None):
+def load_or_download_mnist(data_dir="mnist", pickle_file=None):
     """
     Load the MNIST dataset from pickle files or download it.
 
     Parameters:
     - data_dir: str
         Directory to save or look for the MNIST dataset.
-    - x_pickle_file: str or None
-        Path to the pickle file for images. If None, data is downloaded from the Internet.
-    - y_pickle_file: str or None
-        Path to the pickle file for labels. If None, data is downloaded from the Internet.
+    - pickle_file: str or None
+        Path to the pickle file to create/load. If None, data is downloaded from the Internet.
 
     Returns:
     - images: ndarray of shape (n_samples, 784)
@@ -27,11 +25,11 @@ def load_or_download_mnist(data_dir="mnist", x_pickle_file=None, y_pickle_file=N
     """
     images, labels = None, None
 
-    if pickleFileExists(x_pickle_file) and pickleFileExists(y_pickle_file):
+    if pickleFileExists(pickle_file):
         print("Loading MNIST dataset from pickle files...")
-        with open(x_pickle_file, 'rb') as f_x, open(y_pickle_file, 'rb') as f_y:
-            images = pickle.load(f_x)
-            labels = pickle.load(f_y)
+        with open(pickle_file, 'rb') as f:
+            data = pickle.load(f)
+            images, labels = data["images"], data["labels"]
     else:
         print("Downloading MNIST dataset...")
         transform = transforms.Compose([
@@ -43,11 +41,11 @@ def load_or_download_mnist(data_dir="mnist", x_pickle_file=None, y_pickle_file=N
         images = images.reshape(images.shape[0], -1).numpy()
         labels = mnist.targets.numpy()
 
-        if x_pickle_file and y_pickle_file:
-            with open(x_pickle_file, 'wb') as f_x, open(y_pickle_file, 'wb') as f_y:
-                pickle.dump(images, f_x)
-                pickle.dump(labels, f_y)
-                print(f"Data saved to {x_pickle_file} and {y_pickle_file}")
+        if pickle_file:
+            with open(pickle_file, 'wb') as f:
+                data = {"data": images, "labels": labels}
+                pickle.dump(data, f)
+                print(f"Data saved to {pickle_file}")
 
             shutil.rmtree(os.path.join(data_dir, "MNIST"))
     return images, labels
@@ -57,8 +55,7 @@ def load_or_download_mnist(data_dir="mnist", x_pickle_file=None, y_pickle_file=N
 if __name__ == "__main__":
     data_dir = "./mnist"
     os.makedirs(data_dir, exist_ok=True)
-    x_pickle_file = os.path.join(data_dir, "mnist_images.pkl")
-    y_pickle_file = os.path.join(data_dir, "mnist_labels.pkl")
+    pickle_file = os.path.join(data_dir, "mnist.pkl")
 
     # Load or download MNIST dataset
-    images, labels = load_or_download_mnist(data_dir=data_dir, x_pickle_file=x_pickle_file, y_pickle_file=y_pickle_file)
+    images, labels = load_or_download_mnist(data_dir=data_dir, pickle_file=pickle_file)

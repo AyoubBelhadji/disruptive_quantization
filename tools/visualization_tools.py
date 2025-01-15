@@ -189,4 +189,3 @@ def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_traj
     plt.close()
 
     return mmd_plot_path
-

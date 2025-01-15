@@ -7,7 +7,8 @@ Also also created on Mon Nov 18 6:22:10 2024
 @author: ayoubbelhadji
 """
 
-import os, argparse
+import os
+import argparse
 
 # Import relevant functions
 from functions.kernels.gaussian_kernel import *
@@ -19,8 +20,7 @@ from functions.initial_distributions.data_distribution import *
 from functions.initial_distributions.kmeanspp_distribution import *
 from functions.noise_generators.gaussian_sqrt_noise import *
 from functions.time_parameterizations.time_parameterizations import *
-from tools.files_tools import *
-from tools.visualization_tools import *
+from tools import files_tools, visualization_tools
 from tools.simulation_manager import *
 
 
@@ -41,11 +41,14 @@ function_map = {
 
 # Set up the argument parser
 parser = argparse.ArgumentParser(description="Run quantization experiments")
-parser.add_argument("--no-viz", help="No visualization (default generates gif + MMD)", action="store_true")
+parser.add_argument(
+    "--no-viz", help="No visualization (default generates gif + MMD)", action="store_true")
 parser.add_argument("-g", "--gif",
                     help="Just visualize gif", action="store_true")
 parser.add_argument("-m", "--mmd-viz",
                     help="Just visualize mmd", action="store_true")
+parser.add_argument("-n", "--neighbor-viz",
+                    help="Add nearest neighbors visualization", action="store_true")
 parser.add_argument(
     "--dir", help="Configuration subdirectory in ./ or ./experiment_configs", type=str, default='examples')
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
@@ -56,8 +59,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_viz = args.no_viz
     just_gif = args.gif
-    show_gif_visualization = (just_gif or not no_viz) and not args.mmd_viz
-    show_mmd_visualization = not (just_gif or no_viz)
+    show_gif_visualization = not args.no_viz and not args.mmd_viz
+    show_mmd_visualization = not args.no_viz and not args.gif
+    show_nns_visualization = not args.no_viz and args.neighbor_viz
     config_subdir = args.dir
     debug = args.debug
 
@@ -87,30 +91,18 @@ if __name__ == "__main__":
             config_path = os.path.join(config_folder, config_filename)
 
             # Load the configuration
-            config = load_config(config_path)
+            config = files_tools.load_config(config_path)
 
             # Extract experiment details
             algorithm_name = config['algorithm_name']
-            params = categorize_params(config, function_map)
+            params = files_tools.categorize_params(config, function_map)
 
             # Initialize the data loader
-            data_loader = DataLoader(datasets_folder='datasets')
+            data_loader = files_tools.DataLoader(datasets_folder='datasets')
 
             # Load the dataset
-            dataset_name = params['dataset_name'] + '.pkl'
-            try:
-                data = data_loader.load_dataset(dataset_name)
-                print(
-                    f"Loaded dataset shape for {config_filename}: {data.shape}")
-                if "N" in params:
-                    print(f"Using subset of size {params['N']}")
-                    data = data[:params["N"]]
-            except Exception as e:
-                print(f"Failed to load dataset for {config_filename}: {e}")
-                if debug:
-                    raise e
-                else:
-                    continue
+            data, labels = data_loader.get_data(
+                params['dataset_name'], params.get('N', 0), debug)
 
             # Example metadata
             experiment_metadata = {
@@ -138,20 +130,33 @@ if __name__ == "__main__":
 
                 # Visualize the dynamics using a gif
                 if show_gif_visualization:
-                    visualize_and_save_dynamics(
+                    visualization_tools.visualize_and_save_dynamics(
                         algorithm_name, experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, output_subdir)
 
                 if show_mmd_visualization:
                     if 'kernel' in params:
                         test_kernel = params['kernel'].GetKernel()
                     else:
-                        test_kernel_str = params.get('test_kernel', 'gaussian_kernel')
-                        test_kernel_bandwidth = params.get('test_kernel_bandwidth', 1.0)
-                        test_kernel = function_map[test_kernel_str](test_kernel_bandwidth).kernel
+                        test_kernel_str = params.get(
+                            'test_kernel', 'gaussian_kernel')
+                        test_kernel_bandwidth = params.get(
+                            'test_kernel_bandwidth', 1.0)
+                        test_kernel = function_map[test_kernel_str](
+                            test_kernel_bandwidth).kernel
                     c_array = rand_algo.c_array_trajectory
                     w_array = rand_algo.w_array_trajectory
-                    visualize_and_save_dynamics_with_mmd(
+                    visualization_tools.visualize_and_save_dynamics_with_mmd(
                         algorithm_name, experiment_full_id, c_array, w_array, rand_algo.data_array, test_kernel, output_subdir)
+
+                if show_nns_visualization:
+                    if labels is None:
+                        print(
+                            "No labels available for nearest neighbors visualization")
+                        continue
+                    nearest_neighbors_params = params.get(
+                        'nearest_neighbors', {})
+                    visualization_tools.visualize_and_save_nearest_neighbors(
+                        algorithm_name, experiment_full_id, rand_algo.c_array_trajectory, rand_algo.data_array, labels, output_subdir, **nearest_neighbors_params)
 
             except ValueError as e:
                 print(

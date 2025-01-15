@@ -14,7 +14,7 @@ def expand_limits(min, max, factor):
     return min - factor * delta, max + factor * delta
 
 
-def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r, alg_name, file_format, **ax_kwargs):
+def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath, **ax_kwargs):
     T = centroids.shape[0]
     fig, ax = plt.subplots()
     ax.set(**ax_kwargs)
@@ -31,7 +31,7 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
 
     ani = FuncAnimation(fig, update, frames=T, interval=200)
     folder_name = os.path.join(
-        "figures", config_folder, experiment_name, "gif")
+        "figures", subpath, "gif")
     create_folder_if_needed(folder_name)
 
     # Save animation as a GIF
@@ -48,7 +48,7 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
     plt.close(fig)  # Close the figure to avoid displaying static plots
 
 
-def centroid_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format="gif", limit_margin=0.1):
+def centroid_dynamics(alg_name, c_array_trajectory, data_array, subpath, file_format="gif", limit_margin=0.1):
     R = c_array_trajectory.shape[0]
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
@@ -56,5 +56,4 @@ def centroid_dynamics(alg_name, experiment_name, c_array_trajectory, data_array,
         data_array[:, 1]), limit_margin)
     for r in range(R):
         centroids_r = c_array_trajectory[r]
-        create_dynamics_gif(data_array, centroids_r, config_folder,
-                            experiment_name, r, alg_name, file_format, xlim=xlims, ylim=ylims)
+        create_dynamics_gif(data_array, centroids_r, r, alg_name, file_format, subpath, xlim=xlims, ylim=ylims)

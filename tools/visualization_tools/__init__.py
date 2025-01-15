@@ -1,2 +1,3 @@
 from .mmd_visualization import evolution_weights_mmd
 from .centroid_visualization import centroid_dynamics
+from .nearest_neighbor_visualization import nearest_neighbors

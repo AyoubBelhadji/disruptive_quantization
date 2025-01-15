@@ -65,7 +65,7 @@ parser.add_argument("-m", "--mmd-viz", help="Just visualize mmd", action="store_
 parser.add_argument(
     "-n",
     "--neighbor-viz",
-    help="Add nearest neighbors visualization",
+    help="Just visualize nearest neighbors",
     action="store_true",
 )
 parser.add_argument(
@@ -82,9 +82,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     no_viz = args.no_viz
     just_gif = args.gif
-    show_gif_visualization = not args.no_viz and not args.mmd_viz
-    show_mmd_visualization = not args.no_viz and not args.gif
-    show_nns_visualization = not args.no_viz and args.neighbor_viz
+    show_gif_visualization = not args.no_viz and not (args.mmd_viz or args.neighbor_viz)
+    show_mmd_visualization = not args.no_viz and not (args.gif or args.neighbor_viz)
+    show_nns_visualization = not args.no_viz and not (args.gif or args.mmd_viz)
     config_subdir = args.dir
     debug = args.debug
 
@@ -150,14 +150,17 @@ if __name__ == "__main__":
                     comment=f"Experiment based on {config_filename}",
                 )
 
+                subpath = os.path.join(output_subdir, experiment_full_id)
+                c_array = rand_algo.c_array_trajectory
+                w_array = rand_algo.w_array_trajectory
+
                 # Visualize the dynamics using a gif
                 if show_gif_visualization:
                     visualization_tools.centroid_dynamics(
                         algorithm_name,
-                        experiment_full_id,
-                        rand_algo.c_array_trajectory,
-                        rand_algo.data_array,
-                        output_subdir,
+                        c_array,
+                        data,
+                        subpath,
                     )
 
                 if show_mmd_visualization:
@@ -169,32 +172,24 @@ if __name__ == "__main__":
                         test_kernel = function_map[test_kernel_str](
                             test_kernel_bandwidth
                         ).kernel
-                    c_array = rand_algo.c_array_trajectory
-                    w_array = rand_algo.w_array_trajectory
                     visualization_tools.evolution_weights_mmd(
                         algorithm_name,
-                        experiment_full_id,
                         c_array,
                         w_array,
-                        rand_algo.data_array,
+                        data,
                         test_kernel,
-                        output_subdir,
+                        subpath,
                     )
 
                 if show_nns_visualization:
+                    plot_path = os.path.join("figures", subpath, "plots")
+                    files_tools.create_folder_if_needed(plot_path)
                     if labels is None:
                         print("No labels available for nearest neighbors visualization")
                         continue
                     nearest_neighbors_params = params.get("nearest_neighbors", {})
-                    visualization_tools.nearest_neighbors(
-                        algorithm_name,
-                        experiment_full_id,
-                        rand_algo.c_array_trajectory,
-                        rand_algo.data_array,
-                        labels,
-                        output_subdir,
-                        **nearest_neighbors_params,
-                    )
+
+                    visualization_tools.nearest_neighbors(algorithm_name, c_array, w_array, data, labels, plot_path, **nearest_neighbors_params)
 
             except ValueError as e:
                 print(f"Error running {algorithm_name} for {config_filename}: {e}")

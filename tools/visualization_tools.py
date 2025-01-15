@@ -11,10 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter, ImageMagickWriter, FFMpegWriter
 import tools.mmd_tools as mmd
-import numba as nb
 
 from .files_tools import *
-
 
 def expand_limits(min, max, factor):
     """
@@ -23,11 +21,9 @@ def expand_limits(min, max, factor):
     delta = max - min
     return min - factor * delta, max + factor * delta
 
-
 def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r, alg_name, file_format, **ax_kwargs):
     T = centroids.shape[0]
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    fig, ax = plt.subplots()
     ax.set(**ax_kwargs)
     ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=0.5)
     ax.scatter(centroids[0, :, 0], centroids[0, :, 1], color='red',
@@ -59,7 +55,7 @@ def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r
 
 
 def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format = "gif", limit_margin=0.1):
-    R, T, M, d = c_array_trajectory.shape
+    R = c_array_trajectory.shape[0]
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
     ylims = expand_limits(np.min(data_array[:, 1]), np.max(
@@ -68,19 +64,6 @@ def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, d
         centroids_r = c_array_trajectory[r]
         create_dynamics_gif(data_array, centroids_r, config_folder,
                             experiment_name, r, alg_name, file_format, xlim=xlims, ylim=ylims)
-
-
-@nb.jit(parallel=True)
-def compute_all_mmds_uncached(all_nodes_arr, X, kernel, all_weights_arr):
-    M, D = all_nodes_arr.shape[-2:]
-    all_nodes = all_nodes_arr.reshape(-1, M, D)
-    all_weights = all_weights_arr.reshape(-1, M)
-    mmds = np.empty(len(all_nodes))
-    for i in nb.prange(len(all_nodes)):
-        Y = all_nodes[i]
-        weights_Y = all_weights[i]
-        mmds[i] = mmd.compute_mmd_weighted(X, Y, kernel, weights_Y=weights_Y)
-    return mmds.reshape(all_nodes_arr.shape[:-2])
 
 def weight_sum_plot(alg_name, mmd_folder, w_sums):
     """ Plot the sum of weights over iterations for all repetitions """
@@ -124,10 +107,10 @@ def mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder, r):
         ax.legend()
         ax.grid(True)
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust space for the title
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust space for the title
     w_array_plot_path = os.path.join(
         mmd_folder, f"w_array_evolution_r_{r}_horizontal.png")
-    plt.savefig(w_array_plot_path)
+    fig.savefig(w_array_plot_path)
     plt.show()
 
 
@@ -143,16 +126,15 @@ def mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder, r):
         ax = axes[m+1]  # Select the current subplot
         ax.plot(range(T), np.sign(
             w_array[r, :, m]), label=f"m={m}", color="black")
-        ax.set_xlabel("t")
-        ax.set_xscale('log')
+        ax.set(xlabel="t", xscale="log")
         ax.legend()
         ax.grid(True)
 
-        # Adjust layout and save the figure
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust space for the title
+    # Adjust layout and save the figure
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust space for the title
     w_array_plot_path = os.path.join(
         mmd_folder, f"w_array_evolution_r_{r}_horizontal_sign.png")
-    plt.savefig(w_array_plot_path)
+    fig.savefig(w_array_plot_path)
     plt.show()
 
 
@@ -177,10 +159,10 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
     for r in range(R):
         plt.plot(range(T), logdets[r], label=f"r={r}", lw=3)
     ax.set(title=f"Logdet evolution over iterations, {alg_name}", xlabel="Iteration", ylabel="Logdet", xscale='log')
-    plt.legend()
-    plt.grid()
+    ax.legend()
+    ax.grid()
     logdet_plot_path = os.path.join(mmd_folder, "logdet_evolution.png")
-    plt.savefig(logdet_plot_path)
+    fig.savefig(logdet_plot_path)
     plt.show()
 
 def calculate_mmd_and_logdets(experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder, cached_MMD=True):

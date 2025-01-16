@@ -43,7 +43,7 @@ def update_experiment_id_mapping(experiment_id, experiment_folder):
 
 class SimulationManager:
     def __init__(self):
-        self.experiments = {}
+        self.experiments = []
 
     def run_simulation(self, data, algorithm, name, metadata=None):
         result = algorithm.run(data)
@@ -53,22 +53,22 @@ class SimulationManager:
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "data_shape": data.shape,
             }
-        self.experiments[name] = {
-            "data": result,
+        self.experiments.append({
+            "result": result,
             "params": algorithm.params,
             "metadata": metadata,
-        }
+        })
         return result
 
-    def save_experiments(
+    def save_last_experiment(
         self,
-        experiment_name="experiment",
-        results_folder_base="results",
-        category="sandbox",
-        experiment_subdir=None,
-        algorithm: AbstractAlgorithm = None,
-        python_file_name=None,
+        algorithm: AbstractAlgorithm,
+        experiment_name,
         comment=None,
+        experiment_subdir=None,
+        results_folder_base="experiments",
+        category="sandbox",
+        python_file_name=None,
     ):
         # Allow the user to specify if the experiment is "sandbox" or "validated"
         results_folder_base = self.create_results_folder(
@@ -77,7 +77,7 @@ class SimulationManager:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         experiment_id, experiment_folder = self.store_experiment_data(
-            experiment_name, results_folder_base, timestamp
+            experiment_name, results_folder_base, timestamp, -1
         )
 
         if algorithm:
@@ -105,7 +105,8 @@ class SimulationManager:
 
         return experiment_name + "_" + str(experiment_id) + "_" + str(timestamp)
 
-    def store_experiment_data(self, experiment_name, results_folder_base, timestamp):
+    def store_experiment_data(self, experiment_name, results_folder_base, timestamp, idx = None):
+        save_experiment = self.experiments if idx is None else self.experiments[idx]
         experiment_id = get_next_experiment_id()  # Get the next integer ID
         experiment_folder = os.path.join(
             results_folder_base, f"{experiment_name}_{experiment_id}_{timestamp}"
@@ -119,11 +120,11 @@ class SimulationManager:
             experiment_folder, "experiment_data_with_metadata.npy"
         )
         with open(pkl_file_path, "wb") as f:
-            pickle.dump(self.experiments, f)
-        print(f"Experiments saved in {pkl_file_path}")
+            pickle.dump(save_experiment, f)
+        print(f"Experiment saved in {pkl_file_path}")
 
         np.save(npy_file_path, self.experiments)
-        print(f"Experiments saved in {npy_file_path}")
+        print(f"Experiment saved in {npy_file_path}")
         return experiment_id, experiment_folder
 
     def create_results_folder(self, results_folder_base, category, experiment_subdir):
@@ -144,7 +145,6 @@ class SimulationManager:
         if python_file_name is None:
             python_file_name = "experiment_run.py"
 
-        # Read templates/exp_code_template.py as string and format it
         python_code = (
             open(os.path.join(templates_dir(),"exp_code_template.py"))
             .read()

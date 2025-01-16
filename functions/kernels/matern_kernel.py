@@ -127,3 +127,6 @@ class MaternKernel:
 
     def get_key(self):
         return "MaternKernel", self.sigma, self.nu
+
+    def __reduce__(self):
+        return (self.__class__, (self.sigma, self.nu))

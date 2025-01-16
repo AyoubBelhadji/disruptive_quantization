@@ -41,3 +41,6 @@ class GaussianKernel:
 
     def get_key(self):
         return "GaussianKernel", self.sigma
+    
+    def __reduce__(self):
+        return (self.__class__, (self.sigma,))

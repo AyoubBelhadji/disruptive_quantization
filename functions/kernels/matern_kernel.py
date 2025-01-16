@@ -12,9 +12,9 @@ import numba as nb
 from scipy.special import kv, gamma, gammaln
 
 class MaternKernel:
-    def __init__(self, bandwidth):
+    def __init__(self, bandwidth, nu = 2.5):
         self.sigma = bandwidth
-        self.nu = 2.5
+        self.nu = nu
         if self.nu == 0.5:
             self.kernel = self.matern_nu_0_5(self.sigma)
             self.kernel_grad = self.matern_nu_0_5_grad(self.sigma)
@@ -33,9 +33,7 @@ class MaternKernel:
         self.kernel_grad = nb.jit(self.kernel_grad)
         self.pre_kernel = nb.jit(self.pre_kernel)
 
-
     # Matérn Kernel with nu = 0.5
-
     def matern_nu_0_5(self, sigma):
         def kernel_aux(x, y):
             r = np.linalg.norm(x - y, axis=-1)
@@ -127,3 +125,5 @@ class MaternKernel:
             return log_k
         return kernel_aux
 
+    def get_key(self):
+        return "MaternKernel", self.sigma, self.nu

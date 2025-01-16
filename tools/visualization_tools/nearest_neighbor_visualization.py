@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from tools.files_tools import create_folder_if_needed
-
 def find_nearest_neighbors(nodes: np.ndarray, data: np.ndarray, L: int) -> np.ndarray:
     """ Find the L nearest neighbors of each node in the data """
     M = len(nodes)
@@ -58,44 +56,52 @@ def labelled_nearest_neighbors(nodes, data, labels, num_neighbors):
         node_labels[i] = get_assigned_label(neighbor_idxs[i], labels)
     return neighbor_idxs, node_labels
 
-def plot_nearest_neighbors(nodes, weights, data, labels, r, alg_name, plot_path, num_neighbors = 5, use_images = None, **_):
+def plot_nearest_neighbors(nodes_0, weights_0, nodes_T, weights_T, data, labels_data, r, alg_name, plot_path, num_neighbors = 5, use_images = None):
     if use_images is None: # Rudimentary check: see if the data is square and larger than 10x10
         use_images = data.shape[1] > 100 and int(np.sqrt(data.shape[1]))**2 == data.shape[1]
-    neighbor_idxs, node_labels = labelled_nearest_neighbors(nodes, data, labels, num_neighbors)
-
+    neighbor_idxs, labels_T = labelled_nearest_neighbors(nodes_T, data, labels_data, num_neighbors)
     # Plot nearest neighbors as images if the data is in image format
     if use_images:
         print("Plotting nearest neighbors as images")
         plot_title = f"Nearest neighbors ({num_neighbors}) of nodes, r={r}, {alg_name}"
         # Plot nearest neighbors
-        image_nearest_neighbors(nodes, data, labels, neighbor_idxs, node_labels, plot_title)
+        image_nearest_neighbors(nodes_T, data, labels_data, neighbor_idxs, labels_T, plot_title)
         plt.savefig(os.path.join(plot_path, f"nearest_neighbors_r_{r}.png"))
         plt.show()
 
     # Plot distribution of assigned labels compared to true distribution of assigned labels
-    if node_labels is not None:
+    if labels_T is not None:
+        _, labels_0 = labelled_nearest_neighbors(nodes_0, data, labels_data, num_neighbors)
         # Find offset to align the histograms according to the number of unique labels
-        data_freqs = np.bincount(labels)/len(labels)
-        K = len(data_freqs)
-        label_locations = np.arange(K)
-        node_freqs = np.bincount(node_labels, weights=weights/weights.sum(), minlength=K)
-        legend_labels = {"True labels": data_freqs, "Assigned labels": node_freqs}
-        width = 0.25
-        multiplier = 0
+        visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path)
+    return labels_T
 
-        fig, ax = plt.subplots(layout="constrained")
-        for attr, freq in legend_labels.items():
-            offset = width*multiplier
-            ax.bar(label_locations + offset, freq, width, label=attr)
-            multiplier += 1
-        ax.set_title(f"Assigned labels distribution, r={r}, {alg_name}")
-        ax.legend()
-        plt.savefig(os.path.join(plot_path, f"assigned_labels_r_{r}.png"))
-        plt.show()
-    return node_labels
+def visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path):
+    freqs_data = np.bincount(labels_data)/len(labels_data)
+    K = len(freqs_data)
+    label_locations = np.arange(K)
+    freqs_T = np.bincount(labels_T, weights=weights_T/weights_T.sum(), minlength=K)
+    freqs_0 = np.bincount(labels_0, weights=weights_0/weights_0.sum(), minlength=K)
+    legend_labels = {"True labels": freqs_data, "Assigned labels": freqs_T, "Initial labels": freqs_0}
+    width = 0.25
+    multiplier = 0
 
-def nearest_neighbors(alg_name, centroid_trajectory, weight_trajectory, data_array, labels, plot_path, **kwargs):
+    fig, ax = plt.subplots(layout="constrained")
+    offsets = []
+    for attr, freq in legend_labels.items():
+        offset = width*multiplier
+        ax.bar(label_locations + offset, freq, width, label=attr)
+        multiplier += 1
+        offsets.append(offset)
+    ax.set_title(f"Assigned labels distribution, r={r}, {alg_name}")
+    ax.legend()
+    ax.set_xticks(label_locations + offsets[len(offsets)//2], labels=label_locations)
+    plt.savefig(os.path.join(plot_path, f"assigned_labels_r_{r}.png"))
+    plt.show()
+
+def nearest_neighbors(centroid_trajectory, weight_trajectory, data_array, labels, alg_name, plot_path, **kwargs):
     R = len(centroid_trajectory)
     for r in range(R):
-        c_r, w_r = centroid_trajectory[r, -1], weight_trajectory[r, -1]
-        plot_nearest_neighbors(c_r, w_r, data_array, labels, r, alg_name, plot_path, **kwargs)
+        c_r_0, w_r_0 = centroid_trajectory[r, 0], weight_trajectory[r, 0]
+        c_r_T, w_r_T = centroid_trajectory[r, -1], weight_trajectory[r, -1]
+        plot_nearest_neighbors(c_r_0, w_r_0, c_r_T, w_r_T, data_array, labels, r, alg_name, plot_path, **kwargs)

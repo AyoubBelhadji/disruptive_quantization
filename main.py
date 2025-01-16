@@ -11,23 +11,8 @@ import os
 import argparse
 
 # Import relevant functions
-from functions.kernels import (
-    gaussian_kernel,
-    matern_kernel,
-    inverse_multiquadric_kernel,
-)
-from functions.kernels.kernel_bandwidth_scheduler import (
-    ConstantKernelBandwidth,
-    ExponentialDecayKernelBandwidth,
-)
-from functions.initial_distributions import (
-    uniform_distribution,
-    gaussian_distribution,
-    data_distribution,
-    kmeanspp_distribution,
-)
-from functions.noise_generators.gaussian_sqrt_noise import GaussianSqrtNoise
-from functions.time_parameterizations.time_parameterizations import (
+from functions import kernels, initial_distributions, noise_generators
+from functions.time_parameterizations import (
     LinearTimeParameterization,
     LogarithmicTimeParameterization,
 )
@@ -41,16 +26,16 @@ from tools.simulation_manager import (
 
 # Map function names to function objects
 function_map = {
-    "gaussian_distribution": gaussian_distribution.GaussianDistribution,
-    "uniform_distribution": uniform_distribution.UniformDistribution,
-    "gaussian_sqrt_noise": GaussianSqrtNoise,
-    "gaussian_kernel": gaussian_kernel.GaussianKernel,
-    "matern_kernel": matern_kernel.MaternKernel,
-    "inverse_multiquadric_kernel": inverse_multiquadric_kernel.InverseMultiQuadricKernel,
-    "data_distribution": data_distribution.DataDistribution,
-    "kmeans++": kmeanspp_distribution.KmeansPlusPlusDistribution,
-    "constant_kernel_bandwidth": ConstantKernelBandwidth,
-    "exponential_decay_kernel_bandwidth": ExponentialDecayKernelBandwidth,
+    "gaussian_distribution": initial_distributions.GaussianDistribution,
+    "uniform_distribution": initial_distributions.UniformDistribution,
+    "gaussian_sqrt_noise": noise_generators.GaussianSqrtNoise,
+    "gaussian_kernel": kernels.GaussianKernel,
+    "matern_kernel": kernels.MaternKernel,
+    "inverse_multiquadric_kernel": kernels.InverseMultiQuadricKernel,
+    "data_distribution": initial_distributions.DataDistribution,
+    "kmeans++": initial_distributions.KmeansPlusPlusDistribution,
+    "constant_kernel_bandwidth": kernels.ConstantKernelBandwidth,
+    "exponential_decay_kernel_bandwidth": kernels.ExponentialDecayKernelBandwidth,
     "linear_time_parameterization": LinearTimeParameterization,
     "logarithmic_time_parameterization": LogarithmicTimeParameterization,
 }
@@ -79,8 +64,8 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
     show_gif_visualization = args.gif
-    show_mmd_visualization = args.mmd_viz
-    show_nns_visualization = args.neighbor_viz
+    show_mmd_visualization = args.mmd
+    show_nns_visualization = args.neighbors
     config_subdir = args.dir
     debug = args.debug
 
@@ -188,11 +173,11 @@ if __name__ == "__main__":
                     nearest_neighbors_params = params.get("nearest_neighbors", {})
 
                     visualization_tools.nearest_neighbors(
-                        algorithm_name,
                         c_array,
                         w_array,
                         data,
                         labels,
+                        algorithm_name,
                         plot_path,
                         **nearest_neighbors_params,
                     )

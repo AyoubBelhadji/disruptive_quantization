@@ -43,7 +43,7 @@ def update_experiment_id_mapping(experiment_id, experiment_folder):
 
 class SimulationManager:
     def __init__(self):
-        self.experiments = []
+        self.experiment = None
 
     def run_simulation(self, data, algorithm, name, metadata=None):
         result = algorithm.run(data)
@@ -53,12 +53,34 @@ class SimulationManager:
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "data_shape": data.shape,
             }
-        self.experiments.append({
+        self.experiment = {
             "result": result,
             "params": algorithm.params,
             "metadata": metadata,
-        })
+        }
         return result
+
+    def store_experiment_data(self, experiment_name, results_folder_base, timestamp, idx = None):
+        save_experiment = self.experiment
+        experiment_id = get_next_experiment_id()  # Get the next integer ID
+        experiment_folder = os.path.join(
+            results_folder_base, f"{experiment_name}_{experiment_id}_{timestamp}"
+        )
+        os.makedirs(experiment_folder, exist_ok=True)
+
+        pkl_file_path = os.path.join(
+            experiment_folder, "experiment_data_with_metadata.pkl"
+        )
+        npz_file_path = os.path.join(
+            experiment_folder, "experiment_data.npz"
+        )
+        with open(pkl_file_path, "wb") as f:
+            pickle.dump(save_experiment, f)
+        print(f"Entire experiment saved in {pkl_file_path}")
+
+        np.savez(npz_file_path, **save_experiment["result"])
+        print(f"Experiment results saved in {npz_file_path}")
+        return experiment_id, experiment_folder
 
     def save_last_experiment(
         self,
@@ -77,7 +99,7 @@ class SimulationManager:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         experiment_id, experiment_folder = self.store_experiment_data(
-            experiment_name, results_folder_base, timestamp, -1
+            experiment_name, results_folder_base, timestamp
         )
 
         if algorithm:
@@ -104,29 +126,6 @@ class SimulationManager:
         )
 
         return experiment_name + "_" + str(experiment_id) + "_" + str(timestamp)
-
-    def store_experiment_data(self, experiment_name, results_folder_base, timestamp, idx = None):
-        save_experiment = self.experiments if idx is None else self.experiments[idx]
-        experiment_id = get_next_experiment_id()  # Get the next integer ID
-        experiment_folder = os.path.join(
-            results_folder_base, f"{experiment_name}_{experiment_id}_{timestamp}"
-        )
-        os.makedirs(experiment_folder, exist_ok=True)
-
-        pkl_file_path = os.path.join(
-            experiment_folder, "experiment_data_with_metadata.pkl"
-        )
-        npy_file_path = os.path.join(
-            experiment_folder, "experiment_data.npz"
-        )
-        with open(pkl_file_path, "wb") as f:
-            pickle.dump(save_experiment, f)
-        print(f"Entire experiment saved in {pkl_file_path}")
-
-        if idx is not None:
-            np.savez(npy_file_path, **self.experiments[idx]["result"])
-            print(f"Experiment results saved in {npy_file_path}")
-        return experiment_id, experiment_folder
 
     def create_results_folder(self, results_folder_base, category, experiment_subdir):
         results_folder_base = os.path.join(results_folder_base, category)

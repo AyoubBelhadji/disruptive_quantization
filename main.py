@@ -21,6 +21,7 @@ from functions.kernels.kernel_bandwidth_scheduler import (
     ExponentialDecayKernelBandwidth,
 )
 from functions.initial_distributions import (
+    uniform_distribution,
     gaussian_distribution,
     data_distribution,
     kmeanspp_distribution,
@@ -41,6 +42,7 @@ from tools.simulation_manager import (
 # Map function names to function objects
 function_map = {
     "gaussian_distribution": gaussian_distribution.GaussianDistribution,
+    "uniform_distribution": uniform_distribution.UniformDistribution,
     "gaussian_sqrt_noise": GaussianSqrtNoise,
     "gaussian_kernel": gaussian_kernel.GaussianKernel,
     "matern_kernel": matern_kernel.MaternKernel,
@@ -55,20 +57,16 @@ function_map = {
 
 # Set up the argument parser
 parser = argparse.ArgumentParser(description="Run quantization experiments")
-parser.add_argument(
-    "--no-viz",
-    help="No visualization (default generates gif + MMD)",
-    action="store_true",
-)
-parser.add_argument("-g", "--gif", help="Just visualize gif", action="store_true")
-parser.add_argument("-m", "--mmd-viz", help="Just visualize mmd", action="store_true")
+parser.add_argument("-g", "--gif", help="Visualize centroids", action="store_true")
+parser.add_argument("-m", "--mmd", help="Visualize MMD evolution", action="store_true")
 parser.add_argument(
     "-n",
-    "--neighbor-viz",
-    help="Just visualize nearest neighbors",
+    "--neighbors",
+    help="Visualize nearest neighbors",
     action="store_true",
 )
 parser.add_argument(
+    "-d",
     "--dir",
     help="Configuration subdirectory in ./ or ./experiment_configs",
     type=str,
@@ -80,11 +78,9 @@ parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
-    no_viz = args.no_viz
-    just_gif = args.gif
-    show_gif_visualization = not args.no_viz and not (args.mmd_viz or args.neighbor_viz)
-    show_mmd_visualization = not args.no_viz and not (args.gif or args.neighbor_viz)
-    show_nns_visualization = not args.no_viz and not (args.gif or args.mmd_viz)
+    show_gif_visualization = args.gif
+    show_mmd_visualization = args.mmd_viz
+    show_nns_visualization = args.neighbor_viz
     config_subdir = args.dir
     debug = args.debug
 
@@ -128,7 +124,9 @@ if __name__ == "__main__":
             data, labels = data_loader.get_data(
                 params["dataset_name"], params.get("N", 0), debug
             )
+
             params["N"] = data.shape[0]
+
             # Example metadata
             experiment_metadata = {"description": f"Experiment from {config_filename}"}
 
@@ -169,9 +167,9 @@ if __name__ == "__main__":
                     else:
                         test_kernel_str = params.get("test_kernel", "gaussian_kernel")
                         test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
-                        test_kernel = function_map[test_kernel_str](
-                            test_kernel_bandwidth
-                        ).kernel
+                        test_kernel_fcn = function_map[test_kernel_str]
+                        test_kernel = test_kernel_fcn(test_kernel_bandwidth).kernel
+
                     visualization_tools.evolution_weights_mmd(
                         algorithm_name,
                         c_array,
@@ -189,7 +187,15 @@ if __name__ == "__main__":
                         continue
                     nearest_neighbors_params = params.get("nearest_neighbors", {})
 
-                    visualization_tools.nearest_neighbors(algorithm_name, c_array, w_array, data, labels, plot_path, **nearest_neighbors_params)
+                    visualization_tools.nearest_neighbors(
+                        algorithm_name,
+                        c_array,
+                        w_array,
+                        data,
+                        labels,
+                        plot_path,
+                        **nearest_neighbors_params,
+                    )
 
             except ValueError as e:
                 print(f"Error running {algorithm_name} for {config_filename}: {e}")

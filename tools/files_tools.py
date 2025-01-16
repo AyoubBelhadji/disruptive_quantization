@@ -37,14 +37,14 @@ class DataLoader:
         """
         self.datasets_folder = datasets_folder
 
-    def load_dataset(self, dataset_name, component='data'):
+    def load_dataset(self, dataset_name, datafile_name = "data.pkl", data_component='data', label_component="labels"):
         """
         Loads a dataset stored in Pickle format and extracts the specified component.
 
         Args:
             dataset_name (str): Name of the dataset file (e.g., "dataset.pkl").
-            component (str): The key to extract from the dataset dictionary.
-                             Options are 'data', 'labels', or 'params'.
+            data_component (str): Dictionary key to extract the data from the dataset.
+            label_component (str): Dictionary key to extract the labels of data from the dataset.
 
         Returns:
             np.ndarray or dict: The requested component of the dataset.
@@ -54,24 +54,40 @@ class DataLoader:
             ValueError: If the dataset cannot be loaded or the component is invalid.
             KeyError: If the specified component is not found in the dataset dictionary.
         """
-        dataset_path = os.path.join(self.datasets_folder, dataset_name)
+        dataset_path = os.path.join(self.datasets_folder, dataset_name, datafile_name)
         if not os.path.exists(dataset_path):
             raise FileNotFoundError(
                 f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
-        print(f"Loading dataset '{dataset_name}': component {component}...")
+        print(f"Loading dataset '{dataset_name}' from {dataset_path}: component {data_component}...")
         try:
             with open(dataset_path, 'rb') as f:
                 data_dict = pickle.load(f)
 
                 # Extract the requested component
-                if component not in data_dict:
+                if data_component not in data_dict:
                     raise KeyError(
-                        f"Component '{component}' not found in the dataset.")
-                return data_dict[component]
+                        f"Component '{data_component}' not found in the dataset.")
+                data = data_dict[data_component]
+                labels = data_dict.get(label_component, None)
+                return data, labels
 
         except Exception as e:
             raise ValueError(f"Error loading dataset '{dataset_name}': {e}")
 
+    def get_data(self, dataset_name, N, debug):
+        try:
+            data, labels = self.load_dataset(dataset_name)
+            print(f"Loaded dataset shape for {dataset_name}: {data.shape}")
+            if N > 0:
+                print(f"Using subset of size {N}")
+                data = data[:N]
+        except Exception as e:
+            print(f"Failed to load dataset for {dataset_name}: {e}")
+            if debug:
+                raise e
+            else:
+                return None
+        return data, labels
 
 def load_config(file_path):
     if not os.path.exists(file_path):

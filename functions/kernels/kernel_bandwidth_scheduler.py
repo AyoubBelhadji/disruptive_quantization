@@ -40,6 +40,9 @@ class KernelBandwidthScheduler(ABC):
     def KernelConstructor(self, bandwidth):
         self.kernel_inst = self.kernel_constructor(bandwidth)
 
+    def GetKernelInstance(self):
+        return self.kernel_inst
+
     def GetKernel(self):
         return self.kernel_inst.kernel
 

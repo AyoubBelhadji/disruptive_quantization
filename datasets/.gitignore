@@ -1,2 +1,3 @@
 !*.pkl
 !*.npy
+self_mmd_vals.pkl

@@ -9,66 +9,9 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter, ImageMagickWriter, FFMpegWriter
 import tools.mmd_tools as mmd
 
 import os
-from tools.files_tools import create_folder_if_needed
-
-
-def expand_limits(min, max, factor):
-    """
-    Expand the limits of a plot by a factor.
-    """
-    delta = max - min
-    return min - factor * delta, max + factor * delta
-
-
-def create_dynamics_gif(data_array, centroids, config_folder, experiment_name, r, alg_name, file_format, **ax_kwargs):
-    T = centroids.shape[0]
-    fig, ax = plt.subplots()
-    ax.set(**ax_kwargs)
-    ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=0.5)
-    ax.scatter(centroids[0, :, 0], centroids[0, :, 1], color='red',
-               label='Initial Centroids', alpha=1, marker='D')
-    centroids_t_scatter = ax.scatter(
-        centroids[0, :, 0], centroids[0, :, 1], color='green', alpha=1, label='Centroids', marker='P', s=100)
-
-    def update(t):
-        ax.set_title(f"Centroid dynamics, r={r}, t={t}, {alg_name}")
-        centroids_t_scatter.set_offsets(centroids[t])
-        return centroids_t_scatter
-
-    ani = FuncAnimation(fig, update, frames=T, interval=200)
-    folder_name = os.path.join(
-        "figures", config_folder, experiment_name, "gif")
-    create_folder_if_needed(folder_name)
-
-    # Save animation as a GIF
-    gif_path = os.path.join(
-        folder_name, f"particle_evolution_{r}." + file_format)
-    writer_classes = [FFMpegWriter, ImageMagickWriter, PillowWriter]
-    for writer_class in writer_classes:
-        try:
-            writer = writer_class(fps=10)
-            break
-        except:
-            continue
-    ani.save(gif_path, writer=writer)
-    plt.close(fig)  # Close the figure to avoid displaying static plots
-
-
-def visualize_and_save_dynamics(alg_name, experiment_name, c_array_trajectory, data_array, config_folder="", file_format="gif", limit_margin=0.1):
-    R = c_array_trajectory.shape[0]
-    xlims = expand_limits(np.min(data_array[:, 0]), np.max(
-        data_array[:, 0]), limit_margin)
-    ylims = expand_limits(np.min(data_array[:, 1]), np.max(
-        data_array[:, 1]), limit_margin)
-    for r in range(R):
-        centroids_r = c_array_trajectory[r]
-        create_dynamics_gif(data_array, centroids_r, config_folder,
-                            experiment_name, r, alg_name, file_format, xlim=xlims, ylim=ylims)
-
 
 def weight_sum_plot(alg_name, mmd_folder, w_sums):
     """ Plot the sum of weights over iterations for all repetitions """
@@ -177,14 +120,13 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
     plt.show()
 
 
-def calculate_mmd_and_logdets(experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder, cached_MMD=True):
+def calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath):
     mmd_folder_serial = os.path.join(
-        "experiments", "sandbox", config_folder, experiment_name)
+        "experiments", "sandbox", subpath)
     os.makedirs(mmd_folder_serial, exist_ok=True)
 
-    mmd_values = mmd.mmd_array(
-        data_array, c_array_trajectory, w_array, kernel, cached_MMD)
-    logdets = mmd.logdet_array(c_array_trajectory, kernel)
+    mmd_values = mmd.mmd_array(c_array, w_array, data_array, kernel, mmd_self)
+    logdets = mmd.logdet_array(c_array, kernel)
 
     # Save the mmd_values and logdets
     np.save(os.path.join(mmd_folder_serial, "mmd_values.npy"), mmd_values)
@@ -193,16 +135,16 @@ def calculate_mmd_and_logdets(experiment_name, c_array_trajectory, w_array, data
     return mmd_values, logdets
 
 
-def visualize_and_save_dynamics_with_mmd(alg_name, experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder=""):
-    R, _, M, _ = c_array_trajectory.shape
+def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, dataset_name, subpath):
+    R, _, M, _ = c_array.shape
 
-    mmd_folder_plots = os.path.join(
-        "figures", config_folder, experiment_name, "plots")
+    mmd_folder_plots = os.path.join("figures", subpath, "plots")
     os.makedirs(mmd_folder_plots, exist_ok=True)
-    mmd_values, logdets = calculate_mmd_and_logdets(
-        experiment_name, c_array_trajectory, w_array, data_array, kernel, config_folder)
 
-    w_sums = w_array.sum(axis=2)
+    mmd_self = mmd.Self_MMD_Dict(dataset_name, data_array.shape[0])
+    mmd_values, logdets = calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath)
+
+    w_sums = w_array.sum(axis=-1)
     # Plot the sum of weights over iterations
     weight_sum_plot(alg_name, mmd_folder_plots, w_sums)
 

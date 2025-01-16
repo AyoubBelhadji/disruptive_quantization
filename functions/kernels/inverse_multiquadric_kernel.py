@@ -38,3 +38,5 @@ class InverseMultiQuadricKernel:
             return np.log(1 + dist_sq) * neg_power
         return kernel_aux
 
+    def get_key(self):
+        return f"InverseMultiQuadricKernel_{self.neg_power}", self.sigma

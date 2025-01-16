@@ -60,7 +60,7 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         if self.N == 0:
             raise ValueError("The data_array is empty.")
         if self.N != N_:
-            raise ValueError("The shape of data_array doesn't correspond to N")
+            raise ValueError(f"The length of data_array {N_} doesn't correspond to N {self.N}.")
 
         c_0_array = self.initial_distribution.generate_samples(self.K, self.data_array)
 

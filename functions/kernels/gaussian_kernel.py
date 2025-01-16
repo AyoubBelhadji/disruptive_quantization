@@ -39,3 +39,5 @@ class GaussianKernel:
             return log_output
         return kernel_aux
 
+    def get_key(self):
+        return "GaussianKernel", self.sigma

@@ -5,3 +5,4 @@ Created on Tue Nov 27 10:03:00 2024
 
 @author: dannys4
 """
+from .time_parameterizations import LinearTimeParameterization, LogarithmicTimeParameterization

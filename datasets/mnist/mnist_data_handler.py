@@ -1,6 +1,5 @@
 import os
 import pickle
-import numpy as np
 from torchvision import datasets, transforms
 import shutil
 
@@ -53,9 +52,9 @@ def load_or_download_mnist(data_dir="mnist", pickle_file=None):
 
 # Example usage
 if __name__ == "__main__":
-    data_dir = "./mnist"
+    data_dir = "."
     os.makedirs(data_dir, exist_ok=True)
-    pickle_file = os.path.join(data_dir, "mnist.pkl")
+    pickle_file = os.path.join(data_dir, "data.pkl")
 
     # Load or download MNIST dataset
     images, labels = load_or_download_mnist(data_dir=data_dir, pickle_file=pickle_file)

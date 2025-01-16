@@ -122,7 +122,7 @@ if __name__ == "__main__":
     d = 2
     n_samples = 1000
     n_components = 3
-    save_path = 'gmm_data.pkl'  # Specify the filename to save the data
+    save_path = 'data.pkl'  # Specify the filename to save the data
     data, labels, params = generate_gmm_data(d, n_samples, n_components, save_path=save_path, seed=1234)
     plot_gmm_data(data, labels, params['means'], params['covariances'])
 

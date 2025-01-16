@@ -48,7 +48,7 @@
             }
         },
         "dataset": {
-            "dataset_name": "gmm_data",
+            "dataset_name": "gmm",
             "N": 1000
         }
     }

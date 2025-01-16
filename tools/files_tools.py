@@ -37,7 +37,7 @@ class DataLoader:
         """
         self.datasets_folder = datasets_folder
 
-    def load_dataset(self, dataset_name, data_component='data', label_component="labels"):
+    def load_dataset(self, dataset_name, datafile_name = "data.pkl", data_component='data', label_component="labels"):
         """
         Loads a dataset stored in Pickle format and extracts the specified component.
 
@@ -54,11 +54,11 @@ class DataLoader:
             ValueError: If the dataset cannot be loaded or the component is invalid.
             KeyError: If the specified component is not found in the dataset dictionary.
         """
-        dataset_path = os.path.join(self.datasets_folder, dataset_name)
+        dataset_path = os.path.join(self.datasets_folder, dataset_name, datafile_name)
         if not os.path.exists(dataset_path):
             raise FileNotFoundError(
                 f"Dataset '{dataset_name}' not found in '{self.datasets_folder}'")
-        print(f"Loading dataset '{dataset_name}': component {data_component}...")
+        print(f"Loading dataset '{dataset_name}' from {dataset_path}: component {data_component}...")
         try:
             with open(dataset_path, 'rb') as f:
                 data_dict = pickle.load(f)
@@ -75,9 +75,8 @@ class DataLoader:
             raise ValueError(f"Error loading dataset '{dataset_name}': {e}")
 
     def get_data(self, dataset_name, N, debug):
-        dataset_name = dataset_name + '.pkl'
         try:
-            data, labels = self.load_dataset(dataset_name, 'data')
+            data, labels = self.load_dataset(dataset_name)
             print(f"Loaded dataset shape for {dataset_name}: {data.shape}")
             if N > 0:
                 print(f"Using subset of size {N}")

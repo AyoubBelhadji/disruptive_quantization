@@ -148,12 +148,12 @@ if __name__ == "__main__":
 
                 if show_mmd_visualization:
                     if "kernel" in params:
-                        test_kernel = params["kernel"].GetKernel()
+                        test_kernel = params["kernel"].GetKernelInstance()
                     else:
                         test_kernel_str = params.get("test_kernel", "gaussian_kernel")
                         test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
                         test_kernel_fcn = function_map[test_kernel_str]
-                        test_kernel = test_kernel_fcn(test_kernel_bandwidth).kernel
+                        test_kernel = test_kernel_fcn(test_kernel_bandwidth)
 
                     visualization_tools.evolution_weights_mmd(
                         algorithm_name,
@@ -161,6 +161,7 @@ if __name__ == "__main__":
                         w_array,
                         data,
                         test_kernel,
+                        params["dataset_name"],
                         subpath,
                     )
 

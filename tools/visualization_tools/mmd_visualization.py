@@ -120,14 +120,13 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
     plt.show()
 
 
-def calculate_mmd_and_logdets(c_array_trajectory, w_array, data_array, kernel, subpath, cached_MMD=True):
+def calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath):
     mmd_folder_serial = os.path.join(
         "experiments", "sandbox", subpath)
     os.makedirs(mmd_folder_serial, exist_ok=True)
 
-    mmd_values = mmd.mmd_array(
-        data_array, c_array_trajectory, w_array, kernel, cached_MMD)
-    logdets = mmd.logdet_array(c_array_trajectory, kernel)
+    mmd_values = mmd.mmd_array(c_array, w_array, data_array, kernel, mmd_self)
+    logdets = mmd.logdet_array(c_array, kernel)
 
     # Save the mmd_values and logdets
     np.save(os.path.join(mmd_folder_serial, "mmd_values.npy"), mmd_values)
@@ -136,13 +135,16 @@ def calculate_mmd_and_logdets(c_array_trajectory, w_array, data_array, kernel, s
     return mmd_values, logdets
 
 
-def evolution_weights_mmd(alg_name, c_array_trajectory, w_array, data_array, kernel, subpath):
-    R, _, M, _ = c_array_trajectory.shape
+def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, dataset_name, subpath):
+    R, _, M, _ = c_array.shape
+
     mmd_folder_plots = os.path.join("figures", subpath, "plots")
     os.makedirs(mmd_folder_plots, exist_ok=True)
-    mmd_values, logdets = calculate_mmd_and_logdets(c_array_trajectory, w_array, data_array, kernel, subpath)
 
-    w_sums = w_array.sum(axis=2)
+    mmd_self = mmd.Self_MMD_Dict(dataset_name, data_array.shape[0])
+    mmd_values, logdets = calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath)
+
+    w_sums = w_array.sum(axis=-1)
     # Plot the sum of weights over iterations
     weight_sum_plot(alg_name, mmd_folder_plots, w_sums)
 

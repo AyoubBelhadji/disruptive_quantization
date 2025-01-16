@@ -9,9 +9,8 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 # from .sub_algorithm import SubAlgorithm
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
-import tools.mmd_tools as mmd_tools
 import numpy as np
-from tools.utils import adjugate_matrix
+from tools.utils import adjugate_matrix, broadcast_kernel
 
 import numba as nb
 
@@ -47,7 +46,7 @@ def stable_ms_log_kde(centroids, data, pre_kernel):
 
     # Compute pre-kernel values as a NumPy array
     # Assume pre_kernel can handle array input
-    pre_kernel_array = mmd_tools.broadcast_kernel(pre_kernel, data, centroids) # (N, M)
+    pre_kernel_array = broadcast_kernel(pre_kernel, data, centroids) # (N, M)
     pre_kernel_offset = nb_max_axis0(pre_kernel_array) # (M,)
 
     # Compute the weights (using broadcasting)
@@ -109,7 +108,7 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
 
 @nb.jit(parallel=True)
 def kernel_avg(kernel, pts, avg_pts):
-    return mmd_tools.broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/avg_pts.shape[0]
+    return broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/avg_pts.shape[0]
 
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
@@ -126,7 +125,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         # Be careful because K means kernel matrix and number of centroids
         kernel = self.kernel_scheduler.GetKernel()
 
-        K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
+        K_matrix = broadcast_kernel(kernel, c_array, c_array)
         mu_array = kernel_avg(kernel, c_array, x_array)
 
         weights_array = np.linalg.solve(K_matrix, mu_array)
@@ -140,7 +139,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         kernel = self.kernel_scheduler.GetKernel()
         pre_kernel = self.kernel_scheduler.GetPreKernel()
 
-        K_matrix = mmd_tools.broadcast_kernel(kernel, c_array, c_array)
+        K_matrix = broadcast_kernel(kernel, c_array, c_array)
 
         K_inv_matrix = self.inv_K_fcn(K_matrix)
         ms_array, log_v_0_array = stable_ms_log_kde(c_array, x_array, pre_kernel)

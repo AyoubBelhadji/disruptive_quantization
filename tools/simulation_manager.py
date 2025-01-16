@@ -117,14 +117,15 @@ class SimulationManager:
             experiment_folder, "experiment_data_with_metadata.pkl"
         )
         npy_file_path = os.path.join(
-            experiment_folder, "experiment_data_with_metadata.npy"
+            experiment_folder, "experiment_data.npz"
         )
         with open(pkl_file_path, "wb") as f:
             pickle.dump(save_experiment, f)
-        print(f"Experiment saved in {pkl_file_path}")
+        print(f"Entire experiment saved in {pkl_file_path}")
 
-        np.save(npy_file_path, self.experiments)
-        print(f"Experiment saved in {npy_file_path}")
+        if idx is not None:
+            np.savez(npy_file_path, **self.experiments[idx]["result"])
+            print(f"Experiment results saved in {npy_file_path}")
         return experiment_id, experiment_folder
 
     def create_results_folder(self, results_folder_base, category, experiment_subdir):

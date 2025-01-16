@@ -62,7 +62,7 @@ def plot_nearest_neighbors(nodes_0, weights_0, nodes_T, weights_T, data, labels_
     neighbor_idxs, labels_T = labelled_nearest_neighbors(nodes_T, data, labels_data, num_neighbors)
     # Plot nearest neighbors as images if the data is in image format
     if use_images:
-        print("Plotting nearest neighbors as images")
+        print("Plotting nearest neighbors as images, {}, {}...".format(plot_path, r))
         plot_title = f"Nearest neighbors ({num_neighbors}) of nodes, r={r}, {alg_name}"
         # Plot nearest neighbors
         image_nearest_neighbors(nodes_T, data, labels_data, neighbor_idxs, labels_T, plot_title)

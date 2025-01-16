@@ -40,3 +40,6 @@ class InverseMultiQuadricKernel:
 
     def get_key(self):
         return f"InverseMultiQuadricKernel_{self.neg_power}", self.sigma
+
+    def __reduce__(self):
+        return (self.__class__, (self.sigma, self.neg_power))

@@ -1,0 +1,10 @@
+
+Experiment ID: {experiment_id}
+Experiment: {experiment_name}
+Category: {category}
+Algorithm: {algorithm_name}
+Parameters: {params}
+Timestamp: {timestamp}
+Python File: {python_file_name}
+Comment: {comment}
+---------------------------------

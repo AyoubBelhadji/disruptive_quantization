@@ -88,7 +88,7 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
                 self.c_array_trajectory[r, t+1, :, :] = c_t_plus_1
                 self.w_array_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)
 
-        return self.c_array_trajectory, self.w_array_trajectory
+        return {"centroids": self.c_array_trajectory, "weights": self.w_array_trajectory}
 
     def log(self, message):
         print(f"Log from {self.__class__.__name__}: {message}")

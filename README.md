@@ -40,7 +40,7 @@ If you just want to load the centroid and weight trajectory outputs, you can do 
 ```python
 import numpy as np
 path = "experiments/sandbox/mnist/msip_2_20250116_164850/"
-with np.load(path + "experiment_data.npz") as f:
+with np.load(path + "experiment_data.npz") as np_file:
     centroids, weights = np_file["centroids"], np_file["weights"]
 
 # ... do things with the centroids and weights

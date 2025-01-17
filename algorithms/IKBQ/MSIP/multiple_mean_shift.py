@@ -107,8 +107,13 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
     return ret
 
 @nb.jit(parallel=True, fastmath=True)
-def kernel_avg(kernel, pts, avg_pts):
-    return broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/avg_pts.shape[0]
+def kernel_avg(kernel, y, x):
+    n, m = len(x), len(y)
+    v0 = np.zeros((m,))
+    for i in nb.prange(n):
+        kxy = kernel(x[i],y)
+        v0 += kxy
+    return v0 / n
 
 @nb.jit(parallel=True)
 def broadcast_kernel_parallel_moments_x(kernel, x, y):

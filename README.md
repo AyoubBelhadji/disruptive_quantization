@@ -16,6 +16,13 @@ python main.py -d mnist
 
 Use the `-h` option to see the visualization options. Note that some postproc steps may take longer than others. We try to serialize and cache wherever possible.
 
+### Configuration matrices
+The script `config_generator.py` in the `experiment_configs` directory is intended to create a matrix of configs. It takes into account a template config to base on and a destination directory for the generated files, then creates configs with every combination of keyword arguments provided. For example,
+```
+./config_generator.py mnist/msip.json mnist_gen K=20,30 bandwidth=0.1,1
+```
+This example will generate four configuration files: all of them will be based on `mnist/msip.json`, and only changing the number of centroids `K` and the kernel bandwidth `bandwidth`. They will be created in `mnist_gen` and have all combinations of the two lists of parameters.
+
 ### Loading the data
 You should see some output after running `main.py` regarding where the data is located. For example, if you used a config at `experiment_configs/mnist/msip.json`, you should look for output like
 

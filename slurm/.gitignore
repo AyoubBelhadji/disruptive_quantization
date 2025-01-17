@@ -1,0 +1,4 @@
+log/*
+!log/.keep
+LLSUB**
+slurm_submit.sh.log-*

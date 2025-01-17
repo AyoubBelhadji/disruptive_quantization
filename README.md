@@ -1,4 +1,4 @@
-# DisruptiveQuantization
+# disruptive_quantization
 ## A Python package for quantizing data
 This code is to accompany the work (TODO).
 

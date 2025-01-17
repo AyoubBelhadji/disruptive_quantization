@@ -8,8 +8,9 @@ Also also created on Mon Nov 18 6:22:10 2024
 """
 
 import numpy as np
+from functions.noise_generators.add_sqrt_noise_generator import AddSqrtNoiseGenerator
 
-class GaussianSqrtNoise:
+class GaussianSqrtNoise(AddSqrtNoiseGenerator):
     def __init__(self, params, rng: np.random.Generator):
         """
         Initialize the GaussianSqrtNoise class with parameters.
@@ -20,27 +21,11 @@ class GaussianSqrtNoise:
             - 'd': the dimension
             - 'beta': the initial noise level
         """
+        super().__init__(params, rng)
         self.d = params.get('d')
         self.mean = np.zeros(self.d)
         self.covariance = np.eye(self.d)
-        self.beta = params.get('beta_ns', 0.0)
-        self.rng = rng
 
-    def generate_noise(self, c_array, t):
-        """
-        Generate noise and add it to the input array.
-
-        Parameters:
-        - c_array (numpy.ndarray): The input array with shape (M, d).
-        - t (float): The time step or parameter affecting the noise scale.
-
-        Returns:
-        - numpy.ndarray: The input array with added noise.
-        """
-        if self.beta == 0.0:
-            return c_array
-        else:
-            M, _ = c_array.shape
-            covariance = (self.beta / np.sqrt(t + 1)) * self.covariance
-            noise = self.rng.multivariate_normal(self.mean, covariance, M)
-            return c_array + noise
+    def generate_noise_internal(self, c_array):
+        M = len(c_array)
+        return self.rng.multivariate_normal(self.mean, self.covariance, M)

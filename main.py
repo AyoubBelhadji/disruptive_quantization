@@ -25,6 +25,7 @@ function_map = {
     "gaussian_distribution": initial_distributions.GaussianDistribution,
     "uniform_distribution": initial_distributions.UniformDistribution,
     "gaussian_sqrt_noise": noise_generators.GaussianSqrtNoise,
+    "hypersphere_sqrt_noise": noise_generators.HypersphereSqrtNoise,
     "gaussian_kernel": kernels.GaussianKernel,
     "matern_kernel": kernels.MaternKernel,
     "inverse_multiquadric_kernel": kernels.InverseMultiQuadricKernel,

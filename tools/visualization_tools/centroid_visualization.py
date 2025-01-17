@@ -31,7 +31,7 @@ def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath
 
     ani = FuncAnimation(fig, update, frames=T, interval=200)
     folder_name = os.path.join(
-        "figures", subpath, "gif")
+        "figures", subpath, "mp4")
     create_folder_if_needed(folder_name)
 
     # Save animation as a GIF

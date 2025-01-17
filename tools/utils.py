@@ -80,12 +80,44 @@ def reshape_wrapper(function: callable, nodes: np.ndarray, node_weights: np.ndar
         result = function(nodes, *args)
     return result.reshape(prev_shape[:-2])
 
-@nb.jit(parallel=True)
+@nb.jit()
+def broadcast_kernel_serial(kernel, x, y):
+    x_expand = np.expand_dims(x, axis=1)
+    y_expand = np.expand_dims(y, axis=0)
+    return kernel(x_expand,y_expand)
+
+@nb.jit(parallel=True, fastmath=True)
 def broadcast_kernel_parallel(kernel, x, y):
     n, m = len(x), len(y)
     K = np.zeros((n, m))
     for i in nb.prange(n):
         K[i] = kernel(x[i], y)
+    return K
+
+@nb.jit(parallel=True)
+def broadcast_kernel_parallel_chunked_eval(kernel, x, y):
+    # x is (N_CHUNKS, CHUNK_SIZE, d)
+    # y is (M, d)
+    (N_CHUNKS, CHUNK_SIZE, d), m = x.shape, len(y)
+    K = np.empty((N_CHUNKS, CHUNK_SIZE, m))
+    for i in nb.prange(N_CHUNKS):
+        K[i] = broadcast_kernel_serial(kernel, x[i], y)
+    return K
+
+@nb.jit()
+def broadcast_kernel_parallel_chunked(kernel, x: np.ndarray, y, chunk_size=0):
+    N, M = len(x), len(y)
+    # Heuristic for choosing chunk size
+    if chunk_size == 0:
+        chunk_size = 8
+    x_pad = x
+    if N % chunk_size != 0:
+        # Pad using np.concatenate
+        x_pad = np.concatenate((x, np.zeros((chunk_size - N % chunk_size, x.shape[1]))), axis=0)
+    x_pad = x_pad.reshape(-1, chunk_size, x.shape[1])
+    K = broadcast_kernel_parallel_chunked_eval(kernel, x_pad, y).reshape(-1, M)
+    if N % chunk_size != 0:
+        K = K[:N]
     return K
 
 @nb.jit()
@@ -104,9 +136,7 @@ def broadcast_kernel(kernel, x, y):
     MIN_PARALLEL = 1001
     assert x.shape[1] == y.shape[1], f"Dimension mismatch: {x.shape[1]} != {y.shape[1]}"
     if len(x) < MIN_PARALLEL and len(y) < MIN_PARALLEL:
-        x_expand = np.expand_dims(x, axis=1)
-        y_expand = np.expand_dims(y, axis=0)
-        return kernel(x_expand,y_expand)
+        return broadcast_kernel_serial(kernel, x, y)
     # Perform parallelized kernel computation
     transpose = False
     n, m = len(x), len(y)
@@ -115,6 +145,7 @@ def broadcast_kernel(kernel, x, y):
         x, y = y, x
         n, m = m, n
         transpose = True
+    # K = broadcast_kernel_parallel(kernel, x, y)
     K = broadcast_kernel_parallel(kernel, x, y)
     if transpose:
         K = K.T

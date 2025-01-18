@@ -14,7 +14,8 @@ class GaussianKernel:
     def __init__(self, bandwidth):
         self.sigma = bandwidth
         self.kernel = self.Gaussian_kernel(self.sigma)
-        self.pre_kernel = self.quadratic_function(self.sigma)
+        self.kernel_bar = self.Gaussian_kernel(self.sigma)
+        self.log_kernel = self.quadratic_function(self.sigma)
         self.kernel_grad2 = self.Gaussian_kernel_grad2(self.sigma)
 
     def Gaussian_kernel(self,sigma):

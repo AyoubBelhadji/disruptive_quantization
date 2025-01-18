@@ -31,26 +31,26 @@ def nb_max_axis0(arr):
     return ret
 
 @nb.jit()
-def stable_ms_log_kde_jit(centroids, data, pre_kernel):
+def stable_ms_log_kde_jit(centroids, data, log_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
 
     Args:
         x: The input scalar.
         n_array: A NumPy array of scalars (e.g., n_list).
-        pre_kernel: A function that computes the pre-kernel values.
+        log_kernel: A function that computes the pre-kernel values.
 
     Returns:
         The updated position after applying the mean shift map.
     """
 
     # Compute pre-kernel values as a NumPy array
-    # Assume pre_kernel can handle array input
-    pre_kernel_array = broadcast_kernel(pre_kernel, data, centroids) # (N, M)
-    pre_kernel_offset = nb_max_axis0(pre_kernel_array) # (M,)
+    # Assume log_kernel can handle array input
+    log_kernel_array = broadcast_kernel(log_kernel, data, centroids) # (N, M)
+    log_kernel_offset = nb_max_axis0(log_kernel_array) # (M,)
 
     # Compute the weights (using broadcasting)
-    kernel_evals = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
+    kernel_evals = np.exp(log_kernel_array - log_kernel_offset) # (N, M)
 
     # Compute the weighted sum of the differences
     a = kernel_evals.T.dot(data) # (M, d)
@@ -60,7 +60,7 @@ def stable_ms_log_kde_jit(centroids, data, pre_kernel):
     for i in range(a.shape[0]):
         stable_ms[i] = a[i] / b[i] # (M, d)
 
-    log_kde = pre_kernel_offset+np.log(b) # (M,)
+    log_kde = log_kernel_offset+np.log(b) # (M,)
 
     # Return the mean shift map value
     return stable_ms, log_kde

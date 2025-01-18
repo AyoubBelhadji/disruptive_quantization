@@ -9,7 +9,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 # from .base_algorithm import AbstractAlgorithm
 from algorithms.base_algorithm import AbstractAlgorithm
-
+from abc import abstractmethod
 import numpy as np
 from tqdm import tqdm
 
@@ -66,13 +66,14 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
 
         for r in range(self.R):
             self.kernel_scheduler.IncrementSchedule()
-            if self.freeze_init == True:
+            if self.freeze_init:
                 self.c_array_trajectory[r, 0, :, :] = c_0_array
             else:
                 self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(
                     self.K, self.data_array)
 
-            self.w_array_trajectory[r, 0, :] = float(1/self.K)*np.ones(self.K)
+            self.w_array_trajectory[r, 0, :] = self.calculate_weights(
+                self.c_array_trajectory[r, 0, :, :], 0, np.zeros(self.K))
 
             for t in tqdm(range(self.T - 1), position=0):
                 c_t = self.c_array_trajectory[r, t, :, :]
@@ -89,6 +90,14 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
                 self.w_array_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)
 
         return {"centroids": self.c_array_trajectory, "weights": self.w_array_trajectory}
+
+    @abstractmethod
+    def calculate_weights(self, c_array: np.ndarray, t: float, w_array: np.ndarray):
+        pass
+
+    @abstractmethod
+    def calculate_centroids(self, c_array: np.ndarray, t: float, w_array: np.ndarray):
+        pass
 
     def log(self, message):
         print(f"Log from {self.__class__.__name__}: {message}")

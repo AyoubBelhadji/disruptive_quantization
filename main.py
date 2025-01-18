@@ -161,7 +161,7 @@ def main(show_gif, show_mmd, show_nns, config_subdir, debug):
             # algorithm.run(data)
             sim_manager.run_simulation(data, algorithm, algorithm_name)
             # Use the filename (without extension) as the experiment name
-            experiment_name = config_filename.split(".")[0]
+            experiment_name = ".".join(config_filename.split(".")[:-1])
             comment = f"Experiment based on {config_filename}"
 
             print(f"Successfully ran {algorithm_name} for {config_filename}")

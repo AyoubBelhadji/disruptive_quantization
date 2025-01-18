@@ -31,7 +31,7 @@ def nb_max_axis0(arr):
     return ret
 
 @nb.jit()
-def stable_ms_log_kde(centroids, data, pre_kernel):
+def stable_ms_log_kde_jit(centroids, data, pre_kernel):
     """
     Compute the stable mean shift map using pre-kernel values and array operations.
 
@@ -50,11 +50,11 @@ def stable_ms_log_kde(centroids, data, pre_kernel):
     pre_kernel_offset = nb_max_axis0(pre_kernel_array) # (M,)
 
     # Compute the weights (using broadcasting)
-    weights = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
+    kernel_evals = np.exp(pre_kernel_array - pre_kernel_offset) # (N, M)
 
     # Compute the weighted sum of the differences
-    a = weights.T.dot(data) # (M, d)
-    b = np.sum(weights, axis=0) # (M,)
+    a = kernel_evals.T.dot(data) # (M, d)
+    b = np.sum(kernel_evals, axis=0) # (M,)
 
     stable_ms = np.empty_like(a)
     for i in range(a.shape[0]):
@@ -64,6 +64,9 @@ def stable_ms_log_kde(centroids, data, pre_kernel):
 
     # Return the mean shift map value
     return stable_ms, log_kde
+
+def stable_ms_log_kde(centroids, data, kernel, *_):
+    return stable_ms_log_kde_jit(centroids, data, kernel.log_kernel)
 
 @nb.jit()
 def average_x_v(inverse_kernel_mat, log_w, kde_means):
@@ -126,9 +129,29 @@ def broadcast_kernel_parallel_moments_x(kernel, x, y):
         v1 += np.outer(kxy, x[i])
     return v0, v1
 
-def fast_ms_log_kde(centroids, data, kernel):
-    v0, v1 = broadcast_kernel_parallel_moments_x(kernel, data, centroids)
+@nb.jit(parallel=True)
+def broadcast_kernel_bar_parallel_moments_x(kappa, kappa_bar, x, y):
+    n, (m,d) = len(x), y.shape
+    v0 = np.zeros((m,), dtype=np.float64)
+    v1 = np.zeros((m, d), dtype=np.float64)
+    for i in nb.prange(n):
+        kxy = kappa(x[i], y) # (m,)
+        v0 += kxy
+        kxy_bar = kappa_bar(x[i], y) # (m,)
+        diff = x[i] - y #(m,d)
+        v1 += kxy_bar[:,np.newaxis]*diff # (m,d)
+
+def fast_ms_log_kde(centroids, data, kernel, K_matrix, weights):
+    if not kernel.use_kernel_bar:
+        v0, v1 = broadcast_kernel_parallel_moments_x(kernel.kernel, data, centroids)
+    else:
+        v0, v1 = broadcast_kernel_bar_parallel_moments_x(kernel.kernel, kernel.kernel_bar, data, centroids)
+        add_v1 = K_matrix @ weights
+        v1 += centroids * add_v1[:,np.newaxis]
     return v1, v0.log()
+
+def get_kernel_matrix(kernel, centroids):
+    return broadcast_kernel(kernel.kernel, centroids, centroids)
 
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
@@ -158,13 +181,12 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         x_array = self.data_array
 
         # Get the kernel and prekernel functions
-        kernel = self.kernel_scheduler.GetKernel()
-        pre_kernel = self.kernel_scheduler.GetPreKernel()
+        kernel = self.kernel_scheduler.GetKernelInstance()
 
-        K_matrix = broadcast_kernel(kernel, c_array, c_array)
+        K_matrix = get_kernel_matrix(kernel, c_array)
 
         K_inv_matrix = self.inv_K_fcn(K_matrix)
-        ms_array, log_v_0_array = self.means_log_kde_fcn(c_array, x_array, pre_kernel)
+        ms_array, log_v_0_array = stable_ms_log_kde(c_array, x_array, kernel, None, None)
 
         c_tplus1_array = (1-self.dilation)*c_array + self.dilation*average_x_v(
             K_inv_matrix, log_v_0_array, ms_array)

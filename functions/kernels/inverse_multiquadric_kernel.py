@@ -12,27 +12,35 @@ import numba as nb
 def IMQ_sqrt2_eval(r):
     return 1 / np.sqrt(1 + r)
 @nb.jit()
-def IMQ_sqrt2_diff(r):
+def IMQ_sqrt2_negdiff(r):
     rp1_pow = np.sqrt((1 + r) ** 3)
-    return -1 / (2 * rp1_pow)
+    return 1 / (2 * rp1_pow)
 @nb.jit()
 def log_IMQ_sqrt2(r):
-    return -np.log(1 + r) / 2
+    return -0.5*np.log(1 + r)
+@nb.jit()
+def log_IMQ_sqrt2_negdiff(r):
+    return -np.sqrt(2) - 1.5*np.log(1 + r)
 
 def IMQ_eval(neg_power):
     @nb.jit()
     def kernel_aux(r):
         return (1 + r) ** neg_power
     return kernel_aux
-def IMQ_diff(neg_power):
+def IMQ_negdiff(neg_power):
     @nb.jit()
     def kernel_aux(r):
-        return neg_power * ((1 + r) ** (neg_power - 1))
+        return (-neg_power) * ((1 + r) ** (neg_power - 1))
     return kernel_aux
 def log_IMQ(neg_power):
     @nb.jit()
     def kernel_aux(r):
         return np.log(1 + r) * neg_power
+    return kernel_aux
+def log_IMQ_negdiff(neg_power):
+    @nb.jit()
+    def kernel_aux(r):
+        return np.log(-neg_power) + (neg_power - 1) * np.log(1 + r)
     return kernel_aux
 
 class InverseMultiQuadricKernel:
@@ -40,13 +48,16 @@ class InverseMultiQuadricKernel:
         # Suggested bandwidth = 1/sqrt(2*dim) (Dwivedi, Mackey 2022)
         self.sigma = bandwidth
         self.neg_power = -power
+        self.kernel_bar_is_scaled_kernel = False
         kernel1d_eval = IMQ_sqrt2_eval if power == 0.5 else IMQ_eval(self.neg_power)
-        kernel1d_diff = IMQ_sqrt2_diff if power == 0.5 else IMQ_diff(self.neg_power)
+        kernel1d_negdiff = IMQ_sqrt2_negdiff if power == 0.5 else IMQ_negdiff(self.neg_power)
         kernel1d_log = log_IMQ_sqrt2 if power == 0.5 else log_IMQ(self.neg_power)
+        kernel1d_negdiff_log = log_IMQ_sqrt2_negdiff if power == 0.5 else log_IMQ_negdiff(self.neg_power)
         sigma_sq = bandwidth ** 2
         self.kernel = self.kernel_constructor(sigma_sq, kernel1d_eval)
         self.log_kernel = self.kernel_log_constructor(sigma_sq, kernel1d_log)
-        self.kernel_bar = self.kernel_bar_constructor(sigma_sq, kernel1d_diff)
+        self.kernel_bar = self.kernel_bar_constructor(sigma_sq, kernel1d_negdiff)
+        self.log_kernel_bar = self.log_kernel_bar_constructor(sigma_sq, kernel1d_negdiff_log)
 
     def kernel_constructor(self, sigma_sq, kernel1d):
         @nb.jit()
@@ -62,11 +73,18 @@ class InverseMultiQuadricKernel:
             return kernel1d_log(dist_sq)
         return kernel_aux
 
-    def kernel_bar_constructor(self, sigma_sq, kernel1d_diff):
+    def kernel_bar_constructor(self, sigma_sq, kernel1d_negdiff):
         @nb.jit()
         def kernel_aux(x, y):
             dist_sq = np.sum((x - y)**2, axis=-1) / sigma_sq
-            return -kernel1d_diff(dist_sq) / sigma_sq
+            return kernel1d_negdiff(dist_sq) / sigma_sq
+        return kernel_aux
+
+    def log_kernel_bar_constructor(self, sigma_sq, kernel1d_negdiff_log):
+        @nb.jit()
+        def kernel_aux(x, y):
+            dist_sq = np.sum((x - y)**2, axis=-1) / sigma_sq
+            return kernel1d_negdiff_log(dist_sq) - np.log(sigma_sq)
         return kernel_aux
 
     def get_key(self):

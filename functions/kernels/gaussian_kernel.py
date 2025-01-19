@@ -14,9 +14,11 @@ class GaussianKernel:
     def __init__(self, bandwidth):
         self.sigma = bandwidth
         self.kernel = self.Gaussian_kernel(self.sigma)
-        self.kernel_bar = self.Gaussian_kernel(self.sigma)
+        self.kernel_bar = None # Todo
         self.log_kernel = self.quadratic_function(self.sigma)
+        self.log_kernel_bar = None # Todo
         self.kernel_grad2 = self.Gaussian_kernel_grad2(self.sigma)
+        self.kernel_bar_is_scaled_kernel = True
 
     def Gaussian_kernel(self,sigma):
         @nb.jit(cache=True)

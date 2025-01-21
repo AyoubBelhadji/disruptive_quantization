@@ -92,6 +92,8 @@ def create_visualizations(
     show_mmd,
     show_nns,
 ):
+    if show_gif or show_mmd or show_nns:
+        print("Creating visualizations in ", subpath)
     # Visualize the dynamics using a gif
     if show_gif:
         visualization_tools.centroid_dynamics(

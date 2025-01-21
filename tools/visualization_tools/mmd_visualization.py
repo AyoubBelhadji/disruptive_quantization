@@ -26,11 +26,12 @@ def weight_sum_plot(alg_name, mmd_folder, w_sums):
     plt.show()
 
 
-def weight_evolution_plot(alg_name, w_array, mmd_folder, r, m):
+def weight_evolution_plot(alg_name, w_array, mmd_folder, r):
     """ Plot the evolution of each weight for a given repetition and centroid """
     T = w_array.shape[1]
     fig, ax = plt.subplots()
-    ax.plot(range(T), w_array[r, :, m], label=f"m={m}")
+    for m in range(w_array.shape[-1]):
+        ax.plot(range(T), w_array[r, :, m], label=f"m={m}")
     ax.set(title=f"Plot of weights, r={r}, m={m}, {
            alg_name}", xlabel="t", ylabel="w_array", xscale='log')
     ax.legend()
@@ -149,9 +150,8 @@ def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, datase
     weight_sum_plot(alg_name, mmd_folder_plots, w_sums)
 
     for r in range(R):
-        for m in range(M):
-            # Plot the evolution of each weight
-            weight_evolution_plot(alg_name, w_array, mmd_folder_plots, r, m)
+        # Plot the evolution of each weight
+        weight_evolution_plot(alg_name, w_array, mmd_folder_plots, r)
 
     for r in range(R):
         # Plot MMD evolution and the value of each weight

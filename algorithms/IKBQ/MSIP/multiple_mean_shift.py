@@ -10,7 +10,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 # from .sub_algorithm import SubAlgorithm
 from algorithms.IKBQ import IterativeKernelBasedQuantization
 import numpy as np
-from tools.utils import adjugate_matrix, broadcast_kernel
+from tools.utils import adjugate_matrix, broadcast_kernel, kernel_avg
 
 import numba as nb
 
@@ -114,20 +114,8 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
 
     return ret
 
-
-@nb.jit(parallel=True, fastmath=True)
-def kernel_avg(kernel, y, x):
-    n, m = len(x), len(y)
-    v0 = np.zeros((m,))
-    for i in nb.prange(n):
-        kxy = kernel(x[i], y)
-        v0 += kxy
-    return v0 / n
-
-
 def get_kernel_matrix(kernel, centroids):
     return broadcast_kernel(kernel.kernel, centroids, centroids)
-
 
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):

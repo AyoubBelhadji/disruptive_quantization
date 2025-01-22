@@ -6,10 +6,43 @@ Created on 11/26/2024 12:49:00
 """
 
 import numpy as np
+import numba as nb
 import numbers
 from scipy.integrate import solve_ivp
+from tools.utils import kernel_avg, broadcast_kernel
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
+
+@nb.jit()
+def WFR_ODE_centroid_diff(y_t, w_t, kernel_grad2, data_array, y_dot):
+    # For each node X_i, computes E_pi[grad_2 K(Y, X_i)] - mean(w_j * grad_2 K(X_j, X_i))
+    # Where pi is the distribution of the data points Y = data_array
+    # And K is the kernel function
+    # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
+    M = len(w_t)
+    for i in range(M):
+        y_dot[i]  = w_t.dot(kernel_grad2(y_t, y_t[i]))
+        y_dot[i] -= np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
+        y_dot[i] *= -w_t[i]
+
+@nb.jit(parallel=True)
+def WFR_ODE_weight_diff_NPMLE(y_t, w_t, kernel, data_array, w_dot):
+    N = len(data_array)
+    for ell in nb.prange(N):
+        k_ell = kernel(data_array[ell], y_t)
+        denom = k_ell.dot(w_t)
+        w_dot += k_ell/denom
+    for i in range(len(w_dot)):
+        w_dot[i] = (w_dot[i]/N - 1) * w_t[i]
+
+def WFR_ODE_weight_diff(y_t, w_t, kernel, data_array, w_dot):
+    M = len(w_t)
+    v0 = kernel_avg(kernel, y_t, data_array)
+    Ky = broadcast_kernel(kernel, y_t, y_t)
+    w_dot[:] = Ky.dot(w_t)
+    for i in range(M):
+        w_dot[i] = -(w_dot[i] - v0[i])*w_t[i]
+    # w_dot[:] -= w_dot.sum()
 
 class WassersteinFisherRao(IterativeKernelBasedQuantization):
 
@@ -30,23 +63,23 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
 
         # Create workspaces for the centroids and weights
         # Front-facing workspaces
-        self.c_workspace = np.empty((self.K, self.d))
-        self.w_workspace = np.empty((self.K,))
+        self.y_workspace = np.empty((self.K, self.d))
+        self.w_workspace = np.ones((self.K,))/self.K
 
         # ODE workspaces
-        self.y0 = np.empty(self.c_workspace.size + self.w_workspace.size)
-        diff_workspace = np.empty_like(self.y0)
+        self.state_0 = np.empty(self.y_workspace.size + self.w_workspace.size)
+        diff_workspace = np.empty_like(self.state_0)
         self.diff_workspace = diff_workspace
-        self.cdot_workspace = diff_workspace[:-self.K].reshape((self.K, self.d))
+        self.ydot_workspace = diff_workspace[:-self.K].reshape((self.K, self.d))
         self.wdot_workspace = diff_workspace[-self.K:]
         self.params = params
 
     def calculate_weights(self, *_):
         return self.w_workspace
 
-    def calculate_centroids(self, c_array, t, w_array):
-        self.WFRStep(t, c_array, w_array, self.c_workspace, self.w_workspace)
-        return self.c_workspace
+    def calculate_centroids(self, y_array, t, w_array):
+        self.WFRStep(t, y_array, w_array, self.y_workspace, self.w_workspace)
+        return self.y_workspace
 
     def WFRStep(self, t, c_t, w_t, c_tplus1, w_tplus1):
         """
@@ -64,24 +97,24 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
             raise ValueError(f"WFR: Invalid point_accelerator {self.point_acceleration}, type {type(self.point_acceleration)}")
 
         # Concatenate the centroids and weights into a single initial condition
-        self.y0[:-self.K] = c_t.reshape(-1)
-        self.y0[-self.K:] = w_t
+        self.state_0[:-self.K] = c_t.reshape(-1)
+        self.state_0[-self.K:] = w_t
 
         # Solve the ODE
-        y1 = self.WFR_ODE_solver(tspan)
+        state_1 = self.WFR_ODE_solver(tspan)
 
         # Copy output into the output arrays
-        c_tplus1[:] = y1[:-self.K].reshape((self.K, self.d))
-        w_tplus1[:] = y1[-self.K:].reshape(-1)
+        c_tplus1[:] = state_1[:-self.K].reshape((self.K, self.d))
+        w_tplus1[:] = state_1[-self.K:].reshape(-1)
 
     def Solve_WFR_ODE_Scipy(self, tspan):
         """
         Solve the Wasserstein Fisher-Rao mean-field ODE over the given time span
         """
-        y1 = solve_ivp(self.WFR_ODE, tspan, self.y0, t_eval=(tspan[1],), method=self.ODE_solver_str)
-        if len(y1.y) == 0:
-            raise ValueError(f"ODE solver failed to converge for {tspan}, {y1.y}")
-        return y1.y
+        state_1 = solve_ivp(self.WFR_ODE, tspan, self.state_0, t_eval=(tspan[1],), method=self.ODE_solver_str)
+        if len(state_1.y) == 0:
+            raise ValueError(f"ODE solver failed to converge for {tspan}, {state_1.y}")
+        return state_1.y
 
     def Solve_WFR_ODE_Euler(self, tspan):
         """
@@ -90,41 +123,35 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         t0, t1 = tspan
         num_steps = self.steps_per_iteration
         dt = (t1-t0)/num_steps
-        y1 = self.y0.copy()
+        state_t = self.state_0.copy()
         for t in np.linspace(t0, t1, num_steps, endpoint=False):
-            self.WFR_ODE(t, y1)
-            y1[:] += dt*self.diff_workspace
-        return y1
+            diff = self.WFR_ODE(t, state_t)
+            state_t[:] += dt*diff
+        return state_t
 
-    def WFR_ODE(self, _, y):
+    def WFR_ODE(self, _, state_t):
         """
         RHS for the Wasserstein Fisher-Rao mean-field ODE
         """
-        c_t_vec = y[:-self.K]
-        c_t = c_t_vec.reshape((self.K, self.d))
-        w_t = y[-self.K:]
-        self.WFR_ODE_centroid_diff(c_t, w_t)
-        self.WFR_ODE_weight_diff(  c_t, w_t)
+        y_t_vec = state_t[:-self.K]
+        y_t = y_t_vec.reshape((self.K, self.d))
+        w_t = state_t[-self.K:]
+        WFR_ODE_centroid_diff(y_t, w_t, self.kernel_grad2, self.data_array, self.ydot_workspace)
+        self.wdot_workspace[:] = self.WFR_ODE_weight_diff(  y_t, w_t)
+        # self.diff_workspace[:-self.K] = y_dot.flatten()
+        # self.diff_workspace[-self.K:] = w_dot
         return self.diff_workspace
 
-    def WFR_ODE_centroid_diff(self, c_t, w_t):
-        # For each node X_i, computes E_pi[grad_2 K(Y, X_i)] - mean(w_j * grad_2 K(X_j, X_i))
-        # Where pi is the distribution of the data points Y = data_array
-        # And K is the kernel function
-        # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
-        c_dot = self.cdot_workspace
-        for i in range(self.K):
-            c_dot[i]  = self.kernel_grad2(self.data_array, c_t[i]).mean(axis=0)
-            c_dot[i] -= w_t.dot(self.kernel_grad2(c_t, c_t[i]))
-        c_dot[:] *= self.point_acceleration*w_t[:, None]
-
     def WFR_ODE_weight_diff(self, c_t, w_t):
-        w_dot = self.wdot_workspace
+        F_bar = np.zeros_like(w_t)
         for i in range(self.K):
-            w_dot[i]  = self.kernel(self.data_array, c_t[i]).mean()
-            w_dot[i] -= w_t.dot(self.kernel(c_t, c_t[i]))
+            F_bar[i]  = w_t.dot(self.kernel(c_t, c_t[i]))
+            F_bar[i] -= self.kernel(self.data_array, c_t[i]).mean()
+        # int_F_bar = np.sum(F_bar)
         # Fisher-Rao adjustment
-        w_dot[:] *= w_t
+        # F_tilde = F_bar - int_F_bar
+        w_dot = -w_t * F_bar
+        return w_dot
 
 if __name__ == '__main__':
     from functions.kernels.gaussian_kernel import GaussianKernel
@@ -163,8 +190,8 @@ if __name__ == '__main__':
     wfr.kernel_grad2 = kernel.kernel_grad2
     wfr.WFR_ODE_centroid_diff(c_0, w_0)
     wfr.WFR_ODE_weight_diff(c_0, w_0)
-    assert np.linalg.norm(wfr.cdot_workspace/wfr.cdot_workspace.size) < 1e-7
+    assert np.linalg.norm(wfr.ydot_workspace/wfr.ydot_workspace.size) < 1e-7
 
-    wfr.WFRStep(0, c_0, w_0, wfr.c_workspace, wfr.w_workspace)
-    assert np.linalg.norm(wfr.c_workspace - c_0)/np.linalg.norm(c_0) < 1e-7
+    wfr.WFRStep(0, c_0, w_0, wfr.y_workspace, wfr.w_workspace)
+    assert np.linalg.norm(wfr.y_workspace - c_0)/np.linalg.norm(c_0) < 1e-7
     assert np.linalg.norm(wfr.w_workspace - w_0)/np.linalg.norm(w_0) < 1e-7

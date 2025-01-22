@@ -108,7 +108,7 @@ class MaternKernel:
         kernel_1d_negdiff_log = nb.jit(kernel_1d_negdiff_log)
 
         self.kernel = self.matern_kernel(self.sigma, kernel_1d)
-        self.kernel_grad = self.matern_kernel_grad(self.sigma, kernel_1d_negdiff)
+        self.kernel_grad2 = self.matern_kernel_grad(self.sigma, kernel_1d_negdiff)
         self.log_kernel = self.log_kernel_matern(self.sigma, kernel_1d_log)
         self.kernel_bar = self.kernel_bar_matern(self.sigma, kernel_1d_negdiff)
         self.log_kernel_bar = self.log_kernel_bar_matern(self.sigma, kernel_1d_negdiff_log)
@@ -128,7 +128,7 @@ class MaternKernel:
             dist = np.maximum(dist, 1e-10)
             diff_eval = kernel1d_negdiff(dist/sigma)/(sigma*dist)
             for i in range(diff.shape[0]):
-                diff[i] *= diff_eval
+                diff[i] *= diff_eval[i]
             return diff
         return kernel_aux
 

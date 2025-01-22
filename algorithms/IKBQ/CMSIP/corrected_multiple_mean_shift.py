@@ -51,7 +51,7 @@ def rhs_calculation(kernel, centroids, data):
         )
     return v0, v1
 
-@nb.jit()
+# @nb.jit()
 def msip_mapping(kernel, y_array, v0, v1_hat):
     K_matrix = broadcast_kernel(kernel.kernel, y_array, y_array)
     wts_msip = np.linalg.solve(K_matrix, v0)

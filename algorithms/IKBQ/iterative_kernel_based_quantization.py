@@ -73,7 +73,7 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
                     self.K, self.data_array)
 
             self.w_array_trajectory[r, 0, :] = self.calculate_weights(
-                self.c_array_trajectory[r, 0, :, :], 0, np.zeros(self.K))
+                self.c_array_trajectory[r, 0, :, :], 0, np.ones(self.K)/self.K)
 
             for t in tqdm(range(self.T - 1), position=0):
                 c_t = self.c_array_trajectory[r, t, :, :]

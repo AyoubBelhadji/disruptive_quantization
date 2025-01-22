@@ -42,7 +42,7 @@ class GaussianKernel:
             diff = x - y # (N, d)
             log_kernel = -np.sum(diff**2, axis=-1) / (2 * (sigma ** 2)) # (N,)
             kernel_out = np.exp(log_kernel) # (N,)
-            for i in range(diff.shape[1]):
+            for i in range(len(diff)):
                 diff[i] *= kernel_out[i] / (sigma ** 2)
             return diff
         return kernel_aux

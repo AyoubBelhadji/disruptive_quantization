@@ -9,6 +9,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import os
 import argparse
+import matplotlib.pyplot as plt
 
 # Import relevant functions
 from functions import kernels, initial_distributions, noise_generators
@@ -18,7 +19,6 @@ from functions.time_parameterizations import (
 )
 from tools import files_tools, visualization_tools, AlgorithmManager
 from tools.simulation_manager import SimulationManager
-
 
 # Map function names to function objects
 function_map = {
@@ -88,14 +88,15 @@ def create_visualizations(
     labels,
     params,
     subpath,
-    show_gif,
-    show_mmd,
-    show_nns,
+    plot_gif,
+    plot_mmd,
+    plot_nns,
+    show_plots,
 ):
-    if show_gif or show_mmd or show_nns:
+    if plot_gif or plot_mmd or plot_nns:
         print("Creating visualizations in ", subpath)
     # Visualize the dynamics using a gif
-    if show_gif:
+    if plot_gif:
         visualization_tools.centroid_dynamics(
             algorithm_name,
             c_array,
@@ -103,7 +104,7 @@ def create_visualizations(
             subpath,
         )
 
-    if show_mmd:
+    if plot_mmd:
         if "kernel" in params:
             test_kernel = params["kernel"].GetKernelInstance()
         else:
@@ -120,9 +121,10 @@ def create_visualizations(
             test_kernel,
             params["dataset_name"],
             subpath,
+            show_plots,
         )
 
-    if show_nns:
+    if plot_nns:
         plot_path = os.path.join("figures", subpath, "plots")
         files_tools.create_folder_if_needed(plot_path)
         if labels is not None:
@@ -135,13 +137,14 @@ def create_visualizations(
                 labels,
                 algorithm_name,
                 plot_path,
+                show_plots,
                 **nearest_neighbors_params,
             )
         else:
             print("No labels available for nearest neighbors visualization")
 
 
-def main(show_gif, show_mmd, show_nns, config_subdir, debug):
+def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
     # Load available algorithms
     algorithm_manager = AlgorithmManager(debug=debug)
 
@@ -188,9 +191,10 @@ def main(show_gif, show_mmd, show_nns, config_subdir, debug):
                 labels,
                 params,
                 subpath,
-                show_gif,
-                show_mmd,
-                show_nns,
+                plot_gif,
+                plot_mmd,
+                plot_nns,
+                show_plots,
             )
         except ValueError as e:
             print(f"Error running {algorithm_name} for {config_filename}: {e}")
@@ -204,11 +208,9 @@ parser = argparse.ArgumentParser(description="Run quantization experiments")
 parser.add_argument("-g", "--gif", help="Visualize centroids", action="store_true")
 parser.add_argument("-m", "--mmd", help="Visualize MMD evolution", action="store_true")
 parser.add_argument(
-    "-n",
-    "--neighbors",
-    help="Visualize nearest neighbors",
-    action="store_true",
+    "-n", "--neighbors", help="Visualize nearest neighbors", action="store_true"
 )
+parser.add_argument("-p", "--plots", help="Show plots", action="store_true")
 parser.add_argument(
     "-d",
     "--dir",
@@ -222,16 +224,18 @@ parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
-    show_gif_visualization = args.gif
-    show_mmd_visualization = args.mmd
-    show_nns_visualization = args.neighbors
+    plot_gif = args.gif
+    plot_mmd = args.mmd
+    plot_nns = args.neighbors
+    show_plots = args.plots
     config_subdir = args.dir
     debug = args.debug
 
     main(
-        show_gif_visualization,
-        show_mmd_visualization,
-        show_nns_visualization,
+        plot_gif,
+        plot_mmd,
+        plot_nns,
+        show_plots,
         config_subdir,
         debug,
     )

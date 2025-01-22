@@ -23,7 +23,6 @@ def weight_sum_plot(alg_name, mmd_folder, w_sums):
            xlabel="t", ylabel="Sum of weights")
     ax.legend()
     fig.savefig(os.path.join(mmd_folder, "sum_of_weights.png"))
-    plt.show()
 
 
 def weight_evolution_plot(alg_name, w_array, mmd_folder, r):
@@ -31,7 +30,7 @@ def weight_evolution_plot(alg_name, w_array, mmd_folder, r):
     T = w_array.shape[1]
     fig, ax = plt.subplots()
     for m in range(w_array.shape[-1]):
-        ax.plot(range(T), w_array[r, :, m], label=f"m={m}")
+        ax.plot(range(T), w_array[r, :, m], label=f"m={m}", lw=3)
     ax.set(title=f"Plot of weights, r={r}, m={m}, {
            alg_name}", xlabel="t", ylabel="w_array", xscale='log')
     ax.legend()
@@ -40,7 +39,6 @@ def weight_evolution_plot(alg_name, w_array, mmd_folder, r):
     w_array_plot_path = os.path.join(
         mmd_folder, "w_array_evolution_r_"+str(r)+"_m_"+str(m)+".png")
     fig.savefig(w_array_plot_path)
-    plt.show()
 
 
 def mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder, r):
@@ -63,7 +61,6 @@ def mmd_weight_evolution_plot(alg_name, w_array, mmd_values, mmd_folder, r):
     w_array_plot_path = os.path.join(
         mmd_folder, f"w_array_evolution_r_{r}_horizontal.png")
     fig.savefig(w_array_plot_path)
-    plt.show()
 
 
 def mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder, r):
@@ -88,7 +85,6 @@ def mmd_weight_signs_plot(alg_name, w_array, mmd_values, mmd_folder, r):
     w_array_plot_path = os.path.join(
         mmd_folder, f"w_array_evolution_r_{r}_horizontal_sign.png")
     fig.savefig(w_array_plot_path)
-    plt.show()
 
 
 def mmd_all_plot(alg_name, mmd_values, mmd_folder):
@@ -103,7 +99,6 @@ def mmd_all_plot(alg_name, mmd_values, mmd_folder):
     ax.grid()
     mmd_plot_path = os.path.join(mmd_folder, "mmd_evolution.png")
     fig.savefig(mmd_plot_path)
-    plt.show()
 
 
 def logdet_all_plot(alg_name, logdets, mmd_folder):
@@ -118,7 +113,6 @@ def logdet_all_plot(alg_name, logdets, mmd_folder):
     ax.grid()
     logdet_plot_path = os.path.join(mmd_folder, "logdet_evolution.png")
     fig.savefig(logdet_plot_path)
-    plt.show()
 
 
 def calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath):
@@ -136,8 +130,9 @@ def calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, su
     return mmd_values, logdets
 
 
-def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, dataset_name, subpath):
+def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, dataset_name, subpath, show_plots):
     R, _, M, _ = c_array.shape
+    show_plot_fcn = plt.show if show_plots else lambda: None
 
     mmd_folder_plots = os.path.join("figures", subpath, "plots")
     os.makedirs(mmd_folder_plots, exist_ok=True)
@@ -148,24 +143,30 @@ def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, datase
     w_sums = w_array.sum(axis=-1)
     # Plot the sum of weights over iterations
     weight_sum_plot(alg_name, mmd_folder_plots, w_sums)
+    show_plot_fcn()
 
     for r in range(R):
         # Plot the evolution of each weight
         weight_evolution_plot(alg_name, w_array, mmd_folder_plots, r)
+        show_plot_fcn()
 
     for r in range(R):
         # Plot MMD evolution and the value of each weight
         mmd_weight_evolution_plot(
             alg_name, w_array, mmd_values, mmd_folder_plots, r)
+        show_plot_fcn()
 
     for r in range(R):
         # Plot MMD evolution and the sign of each weight
         mmd_weight_signs_plot(
             alg_name, w_array, mmd_values, mmd_folder_plots, r)
+        show_plot_fcn()
 
     # Plot MMD over iterations for all repetitions
     mmd_all_plot(alg_name, mmd_values, mmd_folder_plots)
+    show_plot_fcn()
 
     # Plot logdet over iterations for all repetitions
     logdet_all_plot(alg_name, logdets, mmd_folder_plots)
+    show_plot_fcn()
     plt.close()

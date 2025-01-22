@@ -58,6 +58,7 @@ class InverseMultiQuadricKernel:
         self.log_kernel = self.kernel_log_constructor(sigma_sq, kernel1d_log)
         self.kernel_bar = self.kernel_bar_constructor(sigma_sq, kernel1d_negdiff)
         self.log_kernel_bar = self.log_kernel_bar_constructor(sigma_sq, kernel1d_negdiff_log)
+        self.kernel_grad2 = self.kernel_grad_constructor(sigma_sq, kernel1d_negdiff)
 
     def kernel_constructor(self, sigma_sq, kernel1d):
         @nb.jit()
@@ -85,6 +86,17 @@ class InverseMultiQuadricKernel:
         def kernel_aux(x, y):
             dist_sq = np.sum((x - y)**2, axis=-1) / sigma_sq
             return kernel1d_negdiff_log(dist_sq) - np.log(sigma_sq)
+        return kernel_aux
+
+    def kernel_grad_constructor(self, sigma_sq, kernel1d_negdiff):
+        @nb.jit()
+        def kernel_aux(x, y):
+            diff = x - y
+            dist_sq = np.sum(diff ** 2, axis=-1) / sigma_sq
+            diff_eval = kernel1d_negdiff(dist_sq)
+            for i in range(diff.shape[0]):
+                diff[i] *= 2 * diff_eval[i] / sigma_sq
+            return diff
         return kernel_aux
 
     def get_key(self):

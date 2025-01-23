@@ -77,15 +77,17 @@ class InverseMultiQuadricKernel:
     def kernel_bar_constructor(self, sigma_sq, kernel1d_negdiff):
         @nb.jit()
         def kernel_aux(x, y):
-            dist_sq = np.sum((x - y)**2, axis=-1) / sigma_sq
-            return kernel1d_negdiff(dist_sq) / sigma_sq
+            diff = x - y
+            dist_sq = np.sum(diff ** 2, axis=-1) / sigma_sq
+            diff_eval = kernel1d_negdiff(dist_sq)
+            return 2 * diff_eval / sigma_sq
         return kernel_aux
 
     def log_kernel_bar_constructor(self, sigma_sq, kernel1d_negdiff_log):
         @nb.jit()
         def kernel_aux(x, y):
             dist_sq = np.sum((x - y)**2, axis=-1) / sigma_sq
-            return kernel1d_negdiff_log(dist_sq) - np.log(sigma_sq)
+            return kernel1d_negdiff_log(dist_sq) + np.log(2/sigma_sq)
         return kernel_aux
 
     def kernel_grad_constructor(self, sigma_sq, kernel1d_negdiff):

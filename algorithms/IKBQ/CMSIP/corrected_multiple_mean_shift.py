@@ -68,7 +68,7 @@ class CorrectedMultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
         super().__init__(params)
         self.algo_name = "Corrected MMS"
-        self.dilation = params.get("dilation", 1.0)
+        self.step_size = params.get("step_size", 1.0)
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
@@ -92,6 +92,6 @@ class CorrectedMultipleMeanShift(IterativeKernelBasedQuantization):
 
         pts_msip = msip_mapping(kernel, c_array, v0, v1_bar)
 
-        c_tplus1_array = (1 - self.dilation) * c_array + self.dilation * pts_msip
+        c_tplus1_array = (1 - self.step_size) * c_array + self.step_size * pts_msip
 
         return c_tplus1_array

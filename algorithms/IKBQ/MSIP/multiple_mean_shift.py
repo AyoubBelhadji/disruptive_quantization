@@ -122,7 +122,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         super().__init__(params)
         self.algo_name = "Vanilla MMS"
         self.reg_K = params.get("reg_K", 1e-5)
-        self.dilation = params.get("dilation", 1.0)
+        self.step_size = params.get("step_size", 1.0)
         use_adjugate = params.get("use_adjugate", True)
         self.inv_K_fcn = adjugate_matrix if use_adjugate else np.linalg.inv
 
@@ -150,7 +150,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         K_inv_matrix = self.inv_K_fcn(K_matrix)
         ms_array, log_v_0_array = stable_ms_log_kde(c_array, x_array, kernel)
 
-        c_tplus1_array = (1 - self.dilation) * c_array + self.dilation * average_x_v(
+        c_tplus1_array = (1 - self.step_size) * c_array + self.step_size * average_x_v(
             K_inv_matrix, log_v_0_array, ms_array
         )
 

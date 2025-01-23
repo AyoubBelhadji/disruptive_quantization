@@ -36,13 +36,13 @@ def WFR_ODE_weight_diff_NPMLE(y_t, w_t, kernel, data_array, w_dot):
         w_dot[i] = (w_dot[i]/N - 1) * w_t[i]
 
 def WFR_ODE_weight_diff(y_t, w_t, kernel, data_array, w_dot):
-    M = len(w_t)
-    v0 = kernel_avg(kernel, y_t, data_array)
-    Ky = broadcast_kernel(kernel, y_t, y_t)
-    w_dot[:] = Ky.dot(w_t)
-    for i in range(M):
-        w_dot[i] = -(w_dot[i] - v0[i])*w_t[i]
-    # w_dot[:] -= w_dot.sum()
+    K = len(w_t)
+    kde_mass = kernel_avg(kernel, y_t, data_array)
+    for i in range(K):
+        w_dot[i]  = w_t.dot(kernel(y_t, y_t[i]))
+        w_dot[i] -= kde_mass[i]
+    # Fisher-Rao adjustment
+    w_dot[:] *= -w_t
 
 class WassersteinFisherRao(IterativeKernelBasedQuantization):
 
@@ -137,7 +137,7 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         y_t = y_t_vec.reshape((self.K, self.d))
         w_t = state_t[-self.K:]
         WFR_ODE_centroid_diff(y_t, w_t, self.kernel_grad2, self.data_array, self.ydot_workspace)
-        self.wdot_workspace[:] = self.WFR_ODE_weight_diff(  y_t, w_t)
+        WFR_ODE_weight_diff(  y_t, w_t, self.kernel, self.data_array, self.wdot_workspace)
         # self.diff_workspace[:-self.K] = y_dot.flatten()
         # self.diff_workspace[-self.K:] = w_dot
         return self.diff_workspace

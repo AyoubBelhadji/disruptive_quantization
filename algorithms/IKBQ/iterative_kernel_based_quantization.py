@@ -81,10 +81,10 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
                 c_t_plus_1 = self.calculate_centroids(c_t, t, w_t)
 
                 # Adjust the centroids according to noise schedule
-                c_t_plus_1 = self.inject_noise_centroids(c_t_plus_1, t)
+                c_t_plus_1[:] = self.inject_noise_centroids(c_t_plus_1, t)
                 # Project the centroids back into the domain
                 if self.use_projection:
-                    c_t_plus_1 = self.domain.project(c_t_plus_1)
+                    c_t_plus_1[:] = self.domain.project(c_t_plus_1)
 
                 self.c_array_trajectory[r, t+1, :, :] = c_t_plus_1
                 self.w_array_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)

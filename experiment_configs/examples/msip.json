@@ -17,7 +17,7 @@
         },
         "optimization": {
             "T": 1000,
-            "dilation": 0.8,
+            "step_size": 0.8,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {

@@ -9,7 +9,7 @@ import numpy as np
 import numba as nb
 import numbers
 from scipy.integrate import solve_ivp
-from tools.utils import kernel_avg, broadcast_kernel
+from tools.utils import kernel_avg
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
 

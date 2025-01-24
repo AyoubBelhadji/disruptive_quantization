@@ -42,6 +42,8 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
         self.step_size = params.get('step_size')
         self.weight_step_size = params.get('weight_step_size', self.step_size)
         self.weight_regularization = params.get('weight_regularization')
+        self.use_WFR = params.get('use_WFR', False)
+        self.project_simplex = params.get('project_simplex', True)
         self.params = params
 
         self.kernel_scheduler = params.get('kernel')
@@ -53,13 +55,23 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
             self.is_first_iteration = False
             return np.ones(len(c_t)) / self.K
 
-        # Calculate gradient direction times step size
-        c_tplus1 = self.y_workspace
-        dF = grad_MMD_geom(w_t, c_t, c_tplus1, self.data_array, self.kernel, self.weight_regularization)
+        proposed_step, w_tp1 = None, None
+        if self.use_WFR:
+            v0 = kernel_avg(self.kernel, c_t, self.data_array)
+            Ky = broadcast_kernel(self.kernel, c_t, c_t)
+            neg_dF_dmu = v0 - Ky.dot(w_t)
+            proposed_step = w_t * np.exp(self.weight_step_size * neg_dF_dmu)
+        else:
+            # Calculate gradient direction times step size
+            c_tplus1 = self.y_workspace
+            dF = grad_MMD_geom(w_t, c_t, c_tplus1, self.data_array, self.kernel, self.weight_regularization)
 
-        # Update weights using one step of interior point method
-        proposed_step = w_t - self.weight_step_size*dF
-        w_tp1 = proj_simplex(proposed_step)
+            # Update weights using one step of interior point method
+            proposed_step = w_t - self.weight_step_size*dF
+        if self.project_simplex:
+            w_tp1 = proj_simplex(proposed_step)
+        else:
+            w_tp1 = proposed_step
 
         return w_tp1
 

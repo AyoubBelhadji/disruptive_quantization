@@ -21,18 +21,31 @@ def grad_MMD_geom(prev_w, prev_nodes, new_nodes, data_array, kernel, MMD_regular
     ret = (1 + MMD_regularization)*KYY.dot(prev_w) - KYX_mean - MMD_regularization*KYY_bar.dot(prev_w)
     return ret
 
-@nb.jit()
-def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
+# @nb.jit()
+# def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
     # For each node X_i, computes E_pi[grad_2 K(Y, X_i)] - mean(w_j * grad_2 K(X_j, X_i))
     # Where pi is the distribution of the data points Y = data_array
     # And K is the kernel function
     # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
-    M = len(w_t)
-    for i in range(M):
-        y_dot_i  = w_t.dot(kernel_grad2(y_t, y_t[i]))
-        y_dot_i -= np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
-        y_dot_i *= -w_t[i]
-        y_t[i] += step_sz * y_dot_i
+    # M = len(w_t)
+    # for i in range(M):
+    #     y_dot_i  = w_t.dot(kernel_grad2(y_t, y_t[i]))
+    #     y_dot_i -= np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
+    #     y_dot_i *= -w_t[i]
+    #     y_t[i] += step_sz * y_dot_i
+
+# Transpose of above function
+@nb.jit(parallel=True)
+def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
+    M, N = len(w_t), len(data_array)
+    dkxy = np.zeros_like(y_t) # (M, d)
+    sqrt_N = np.sqrt(N)
+    for x_idx in nb.prange(N):
+        dkxy_idx = kernel_grad2(data_array[x_idx], y_t) # (M, d)
+        dkxy += dkxy_idx/sqrt_N
+    for y_idx in range(M):
+        y_inc = w_t.dot(kernel_grad2(y_t, y_t[y_idx])) - dkxy[y_idx]/sqrt_N
+        y_t[y_idx] -= step_sz * w_t[y_idx] * y_inc
 
 class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
 
@@ -50,21 +63,21 @@ class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
         self.y_workspace = np.empty((self.K, self.d))
         self.is_first_iteration = True
 
-    def calculate_weights(self, c_t, t, w_t):
+    def calculate_weights(self, y_t, t, w_t):
         if self.is_first_iteration:
             self.is_first_iteration = False
-            return np.ones(len(c_t)) / self.K
+            return np.ones(len(y_t)) / self.K
 
         proposed_step, w_tp1 = None, None
         if self.use_WFR:
-            v0 = kernel_avg(self.kernel, c_t, self.data_array)
-            Ky = broadcast_kernel(self.kernel, c_t, c_t)
+            v0 = kernel_avg(self.kernel, y_t, self.data_array)
+            Ky = broadcast_kernel(self.kernel, y_t, y_t)
             neg_dF_dmu = v0 - Ky.dot(w_t)
             proposed_step = w_t * np.exp(self.weight_step_size * neg_dF_dmu)
         else:
             # Calculate gradient direction times step size
             c_tplus1 = self.y_workspace
-            dF = grad_MMD_geom(w_t, c_t, c_tplus1, self.data_array, self.kernel, self.weight_regularization)
+            dF = grad_MMD_geom(w_t, y_t, c_tplus1, self.data_array, self.kernel, self.weight_regularization)
 
             # Update weights using one step of interior point method
             proposed_step = w_t - self.weight_step_size*dF

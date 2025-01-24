@@ -1,6 +1,7 @@
 import numpy as np
 import numba as nb
 
+@nb.jit()
 def proj_simplex(v):
     r"""Compute the closest point (orthogonal projection) on the
     generalized `(n-1)`-simplex of a vector :math:`\mathbf{v}` wrt. to the Euclidean

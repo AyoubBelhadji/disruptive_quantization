@@ -21,9 +21,8 @@ def WFR_ODE_centroid_diff(y_t, w_t, kernel_grad2, data_array, y_dot):
     # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
     M = len(w_t)
     for i in range(M):
-        y_dot[i]  = w_t.dot(kernel_grad2(y_t, y_t[i]))
-        y_dot[i] -= np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
-        y_dot[i] *= -w_t[i]
+        y_dot[i]  = np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
+        y_dot[i] -= w_t.dot(kernel_grad2(y_t, y_t[i]))
 
 @nb.jit(parallel=True)
 def WFR_ODE_weight_diff_NPMLE(y_t, w_t, kernel, data_array, w_dot):
@@ -137,6 +136,8 @@ class WassersteinFisherRao(IterativeKernelBasedQuantization):
         y_t = y_t_vec.reshape((self.K, self.d))
         w_t = state_t[-self.K:]
         WFR_ODE_centroid_diff(y_t, w_t, self.kernel_grad2, self.data_array, self.ydot_workspace)
+        if self.point_accelerator != 1.0:
+            self.ydot_workspace[:] *= self.point_acceleration
         WFR_ODE_weight_diff(  y_t, w_t, self.kernel, self.data_array, self.wdot_workspace)
         # self.diff_workspace[:-self.K] = y_dot.flatten()
         # self.diff_workspace[-self.K:] = w_dot

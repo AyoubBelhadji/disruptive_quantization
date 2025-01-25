@@ -14,7 +14,7 @@ from tools.utils import adjugate_matrix, broadcast_kernel
 
 import numba as nb
 
-@nb.jit(parallel=True)
+@nb.jit(parallel=True, fastmath=True)
 def nb_max_axis0(arr):
     """
     Compute the maximum value along axis 0 of a NumPy array.
@@ -106,9 +106,29 @@ def average_x_v(inverse_kernel_mat, log_w, kde_means):
 
     return ret
 
+@nb.jit(parallel=True, fastmath=True)
+def kernel_avg(kernel, y, x):
+    n, m = len(x), len(y)
+    v0 = np.zeros((m,))
+    for i in nb.prange(n):
+        kxy = kernel(x[i],y)
+        v0 += kxy
+    return v0 / n
+
 @nb.jit(parallel=True)
-def kernel_avg(kernel, pts, avg_pts):
-    return broadcast_kernel(kernel, avg_pts, pts).sum(axis=0)/avg_pts.shape[0]
+def broadcast_kernel_parallel_moments_x(kernel, x, y):
+    n, (m,d) = len(x), y.shape
+    v0 = np.zeros((m,), dtype=np.float64)
+    v1 = np.zeros((m, d), dtype=np.float64)
+    for i in nb.prange(n):
+        kxy = kernel(x[i], y) # (m,)
+        v0 += kxy
+        v1 += np.outer(kxy, x[i])
+    return v0, v1
+
+def fast_ms_log_kde(centroids, data, kernel):
+    v0, v1 = broadcast_kernel_parallel_moments_x(kernel, data, centroids)
+    return v1, v0.log()
 
 class MultipleMeanShift(IterativeKernelBasedQuantization):
     def __init__(self, params):
@@ -117,7 +137,9 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         self.reg_K = params.get('reg_K', 1e-5)
         self.dilation = params.get('dilation',1.0)
         use_adjugate = params.get('use_adjugate', True)
+        use_stable = params.get('use_stable', True)
         self.inv_K_fcn = adjugate_matrix if use_adjugate else np.linalg.inv
+        self.means_log_kde_fcn = stable_ms_log_kde if use_stable else fast_ms_log_kde
 
     def calculate_weights(self, c_array, t, w_array):
         x_array = self.data_array
@@ -142,7 +164,7 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         K_matrix = broadcast_kernel(kernel, c_array, c_array)
 
         K_inv_matrix = self.inv_K_fcn(K_matrix)
-        ms_array, log_v_0_array = stable_ms_log_kde(c_array, x_array, pre_kernel)
+        ms_array, log_v_0_array = self.means_log_kde_fcn(c_array, x_array, pre_kernel)
 
         c_tplus1_array = (1-self.dilation)*c_array + self.dilation*average_x_v(
             K_inv_matrix, log_v_0_array, ms_array)

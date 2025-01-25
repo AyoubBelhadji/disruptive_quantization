@@ -168,7 +168,7 @@ def categorize_params(config, function_map):
     time_parameterization_info = config['params'].get('time_parameterization', {})
     if len(time_parameterization_info) > 0:
         time_parameterization_params = time_parameterization_info.get('params', {})
-        time_parameterization_name = time_parameterization_info.get('time_discretization_name')
+        time_parameterization_name = time_parameterization_info.get('time_discretization_name', 'linear_time_parameterization')
         time_parameterization_class = function_map[time_parameterization_name]
         params.update(time_parameterization_params)
 

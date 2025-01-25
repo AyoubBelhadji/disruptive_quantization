@@ -9,120 +9,148 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import numpy as np
 import numba as nb
-from scipy.special import kv, gamma, gammaln
+
+MIN_DIST = 1e-10
+
+def matern_nu_0_5_eval(r):
+    return np.exp(-r)
+def matern_nu_0_5_negdiff(r):
+    return np.exp(-r)
+def matern_nu_0_5_log(r):
+    return -r
+def matern_nu_0_5_negdiff_log(r):
+    return -r
+
+def matern_nu_1_5_eval(r):
+    r_sqrt3 = np.sqrt(3) * r
+    return (1 + r_sqrt3) * np.exp(-r_sqrt3)
+def matern_nu_1_5_negdiff(r):
+    r_sqrt3 = np.sqrt(3) * r
+    return 3 * r * np.exp(-r_sqrt3)
+def matern_nu_1_5_log(r):
+    r_sqrt3 = np.sqrt(3) * r
+    return np.log(1 + r_sqrt3) - r_sqrt3
+def matern_nu_1_5_negdiff_log(r):
+    r_sqrt3 = np.sqrt(3) * r
+    return np.log(3 * r) - r_sqrt3
+
+def matern_nu_2_5_eval(r):
+    r_sqrt5 = np.sqrt(5) * r
+    return (1 + r_sqrt5 + r_sqrt5**2 / 3) * np.exp(-r_sqrt5)
+def matern_nu_2_5_negdiff(r):
+    r_sqrt5 = np.sqrt(5) * r
+    return (5*r/3) * np.exp(-r_sqrt5) * (1 + r_sqrt5)
+def matern_nu_2_5_log(r):
+    r_sqrt5 = np.sqrt(5) * r
+    return np.log(1 + r_sqrt5 + r_sqrt5**2 / 3) - r_sqrt5
+def matern_nu_2_5_negdiff_log(r):
+    r_sqrt5 = np.sqrt(5) * r
+    return np.log((5*r/3)*(1 + r_sqrt5)) - r_sqrt5
+
+@nb.jit()
+def log_matern_p_plus_half_coeff(p, i):
+    # Compute log[(p+i)! / (p-i)!i!]
+    # = log[(p+i)(...)(p+1)(p)(p-1)...(p-i+1) / i!]
+    # = sum_{j=1}^i log(p+j) + log(p-j+1) - log(j)
+    ret = 0.
+    for j in range(1, i+1):
+        ret += np.log(p + j) + np.log(p - j + 1) - np.log(j)
+    return ret
+
+def matern_p_plus_half(p):
+    def matern_eval(r):
+        r_sqrt_mul = 2*np.sqrt(p+1)*r
+        exp_term = np.exp(-r_sqrt_mul)
+        loop_mul = 1
+        loop_log_coeff = 0.
+        ret = 0.
+        for j in range(p+1):
+            loop_log_coeff += np.log(p-j) - np.log(2*p-j) - np.log(j)
+            ret += np.exp(loop_log_coeff)*loop_mul
+            loop_mul *= r_sqrt_mul
+        return ret*exp_term
+    def matern_negdiff(r):
+        ret0 = 0.
+        ret1 = 0.
+        r_sqrt_mul = 2*np.sqrt(p+1)*r
+        loop_mul = 1
+        loop_log_coeff = 0.
+        for j in range(p+1):
+            ret += np.exp(loop_log_coeff)*loop_mul
+            loop_log_coeff += np.log(p-j) - np.log(2*p-j) - np.log(j)
+            loop_mul *= r_sqrt_mul
+
 
 class MaternKernel:
     def __init__(self, bandwidth, nu = 2.5):
         self.sigma = bandwidth
         self.nu = nu
         if self.nu == 0.5:
-            self.kernel = self.matern_nu_0_5(self.sigma)
-            self.kernel_grad = self.matern_nu_0_5_grad(self.sigma)
-            self.pre_kernel = self.pre_kernel_nu_0_5(self.sigma)
+            kernel_1d = matern_nu_0_5_eval
+            kernel_1d_negdiff = matern_nu_0_5_negdiff
+            kernel_1d_log = matern_nu_0_5_log
+            kernel_1d_negdiff_log = matern_nu_0_5_negdiff_log
         elif self.nu == 1.5:
-            self.kernel = self.matern_nu_1_5(self.sigma)
-            self.kernel_grad = self.matern_nu_1_5_grad(self.sigma)
-            self.pre_kernel = self.pre_kernel_nu_1_5(self.sigma)
+            kernel_1d = matern_nu_1_5_eval
+            kernel_1d_negdiff = matern_nu_1_5_negdiff
+            kernel_1d_log = matern_nu_1_5_log
+            kernel_1d_negdiff_log = matern_nu_1_5_negdiff_log
         elif self.nu == 2.5:
-            self.kernel = self.matern_nu_2_5(self.sigma)
-            self.kernel_grad = self.matern_nu_2_5_grad(self.sigma)
-            self.pre_kernel = self.pre_kernel_nu_2_5(self.sigma)
+            kernel_1d = matern_nu_2_5_eval
+            kernel_1d_negdiff = matern_nu_2_5_negdiff
+            kernel_1d_log = matern_nu_2_5_log
+            kernel_1d_negdiff_log = matern_nu_2_5_negdiff_log
         else:
             raise ValueError("Unsupported value of nu. Supported values are 0.5, 1.5, and 2.5.")
-        self.kernel = nb.jit(self.kernel)
-        self.kernel_grad = nb.jit(self.kernel_grad)
-        self.pre_kernel = nb.jit(self.pre_kernel)
+        kernel_1d = nb.jit(kernel_1d)
+        kernel_1d_negdiff = nb.jit(kernel_1d_negdiff)
+        kernel_1d_log = nb.jit(kernel_1d_log)
+        kernel_1d_negdiff_log = nb.jit(kernel_1d_negdiff_log)
 
-    # Matérn Kernel with nu = 0.5
-    def matern_nu_0_5(self, sigma):
+        self.kernel = self.matern_kernel(self.sigma, kernel_1d)
+        self.kernel_grad2 = self.matern_kernel_grad(self.sigma, kernel_1d_negdiff)
+        self.log_kernel = self.log_kernel_matern(self.sigma, kernel_1d_log)
+        self.kernel_bar = self.kernel_bar_matern(self.sigma, kernel_1d_negdiff)
+        self.log_kernel_bar = self.log_kernel_bar_matern(self.sigma, kernel_1d_negdiff_log)
+        self.kernel_bar_is_scaled_kernel = False
+
+    def matern_kernel(self, sigma, kernel1d):
+        @nb.jit()
         def kernel_aux(x, y):
-            r = np.linalg.norm(x - y, axis=-1)
-            k = np.exp(-r / sigma)
-            return k
+            return kernel1d(np.sqrt(np.sum((x - y) ** 2, axis=-1))/sigma)
         return kernel_aux
 
-    # TODO: Fix grad
-    def matern_nu_0_5_grad(self, sigma):
+    def matern_kernel_grad(self, sigma, kernel1d_negdiff):
+        @nb.jit()
         def kernel_aux(x, y):
             diff = x - y
-            r = np.linalg.norm(diff, axis=-1, keepdims=True)
-            r_safe = np.maximum(r, np.finfo(float).eps)
-            exp_term = np.exp(-r_safe / sigma)
-            grad = - (exp_term / (sigma * r_safe)) * diff
-            return grad
+            dist = np.sqrt(np.sum(diff ** 2, axis=-1))
+            dist = np.maximum(dist, 1e-10)
+            diff_eval = kernel1d_negdiff(dist/sigma)/(sigma*dist)
+            for i in range(diff.shape[0]):
+                diff[i] *= diff_eval[i]
+            return diff
         return kernel_aux
 
-    def pre_kernel_nu_0_5(self, sigma):
+    def log_kernel_matern(self, sigma, log_kernel1d):
+        @nb.jit()
         def kernel_aux(x, y):
-            r = np.linalg.norm(x - y, axis=-1)
-            log_k = -r / sigma
-            return log_k
+            return log_kernel1d(np.sqrt(np.sum((x - y) ** 2, axis=-1))/sigma)
         return kernel_aux
 
-
-    # Matérn Kernel with nu = 1.5
-
-    def matern_nu_1_5(self, sigma):
+    def kernel_bar_matern(self, sigma, kernel1d_negdiff):
+        @nb.jit()
         def kernel_aux(x, y):
-            r = np.linalg.norm(x - y, axis=-1)
-            sqrt3_r_l = np.sqrt(3) * r / sigma
-            k = (1 + sqrt3_r_l) * np.exp(-sqrt3_r_l)
-            return k
+            dist = np.sqrt(np.sum((x - y) ** 2, axis=-1))
+            dist = np.maximum(dist, MIN_DIST)
+            return kernel1d_negdiff(dist/sigma)/(sigma*dist)
         return kernel_aux
 
-    # TODO: Fix grad
-    def matern_nu_1_5_grad(self, sigma):
+    def log_kernel_bar_matern(self, sigma, log_kernel1d_negdiff):
+        @nb.jit()
         def kernel_aux(x, y):
-            diff = x - y
-            r = np.linalg.norm(diff, axis=-1, keepdims=True)
-            sqrt3_r_l = np.sqrt(3) * r / sigma
-            exp_term = np.exp(-sqrt3_r_l)
-            grad_coeff = - (3 / sigma**2) * exp_term
-            grad = grad_coeff * diff
-            return grad
-        return kernel_aux
-
-    def pre_kernel_nu_1_5(self, sigma):
-        def kernel_aux(x, y):
-            r = np.linalg.norm(x - y, axis=-1)
-            sqrt3_r_l = np.sqrt(3) * r / sigma
-            log_k = np.log(1 + sqrt3_r_l) - sqrt3_r_l
-            return log_k
-        return kernel_aux
-
-    # ----------------------------
-    # Matérn Kernel with nu = 2.5
-    # ----------------------------
-
-    def matern_nu_2_5(self,sigma):
-        def kernel_aux(x, y):
-            r = np.sqrt(np.sum((x - y) ** 2, axis=-1))
-            sqrt5_r_l = np.sqrt(5) * r / sigma
-            k = (1 + sqrt5_r_l + (5 * r**2) / (3 * sigma**2)) * np.exp(-sqrt5_r_l)
-            return k
-        return kernel_aux
-
-    # TODO: Fix grad
-    def matern_nu_2_5_grad(self, sigma):
-        def kernel_aux(x, y):
-            diff = x - y
-            r = np.linalg.norm(diff, axis=-1, keepdims=True)
-            sqrt5_r_l = np.sqrt(5) * r / sigma
-            r_safe = np.maximum(r, np.finfo(float).eps)
-            exp_term = np.exp(-sqrt5_r_l)
-            coeff = - (5 / (3 * sigma**4 * r_safe))
-            grad = coeff * diff * (sigma**2 + 5 * r_safe**2)
-            return grad
-        return kernel_aux
-
-    def pre_kernel_nu_2_5(self, sigma):
-        def kernel_aux(x, y):
-            r_sq = np.sum((x - y) ** 2, axis=-1)
-            r = np.sqrt(r_sq)
-            sqrt5_r_l = np.sqrt(5) * r / sigma
-            term1 = np.log(1 + sqrt5_r_l + (5 * r_sq) / (3 * sigma**2))
-            log_k = term1 - sqrt5_r_l
-            return log_k
+            dist = np.sqrt(np.sum((x - y) ** 2, axis=-1))
+            return log_kernel1d_negdiff(dist/sigma) - np.log(sigma*dist)
         return kernel_aux
 
     def get_key(self):

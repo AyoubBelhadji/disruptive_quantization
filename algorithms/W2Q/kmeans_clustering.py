@@ -68,7 +68,7 @@ class KmeansClustering(AbstractAlgorithm):
                 c_tplus1 = self.c_array_trajectory[r, t+1, :, :]
                 self.calculate_centroids(c_tplus1)
 
-        return self.c_array_trajectory, self.w_array_trajectory
+        return {"centroids": self.c_array_trajectory, "weights": self.w_array_trajectory}
 
     def calculate_labels(self, c_array):
         # Calculate L2 distance between each pair of data points and centroids

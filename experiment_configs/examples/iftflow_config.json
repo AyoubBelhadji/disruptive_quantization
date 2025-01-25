@@ -3,8 +3,7 @@
     "algorithm_name": "InteractionForceTransportFlow",
     "params": {
         "hyperparams": {
-            "centroid_step_size": 0.1,
-            "weight_step_size": 1e-3
+            "weight_regularization": 1e-3
         },
         "solution": {
             "K": 3,
@@ -20,7 +19,8 @@
             "R": 10
         },
         "optimization": {
-            "T": 1000
+            "T": 1000,
+            "step_size": 0.8
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",

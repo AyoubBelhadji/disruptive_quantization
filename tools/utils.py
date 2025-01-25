@@ -1,6 +1,7 @@
 import numpy as np
 import numba as nb
 
+@nb.jit()
 def proj_simplex(v):
     r"""Compute the closest point (orthogonal projection) on the
     generalized `(n-1)`-simplex of a vector :math:`\mathbf{v}` wrt. to the Euclidean
@@ -94,32 +95,6 @@ def broadcast_kernel_parallel(kernel, x, y):
         K[i] = kernel(x[i], y)
     return K
 
-@nb.jit(parallel=True)
-def broadcast_kernel_parallel_chunked_eval(kernel, x, y):
-    # x is (N_CHUNKS, CHUNK_SIZE, d)
-    # y is (M, d)
-    (N_CHUNKS, CHUNK_SIZE, d), m = x.shape, len(y)
-    K = np.empty((N_CHUNKS, CHUNK_SIZE, m))
-    for i in nb.prange(N_CHUNKS):
-        K[i] = broadcast_kernel_serial(kernel, x[i], y)
-    return K
-
-@nb.jit()
-def broadcast_kernel_parallel_chunked(kernel, x: np.ndarray, y, chunk_size=0):
-    N, M = len(x), len(y)
-    # Heuristic for choosing chunk size
-    if chunk_size == 0:
-        chunk_size = 8
-    x_pad = x
-    if N % chunk_size != 0:
-        # Pad using np.concatenate
-        x_pad = np.concatenate((x, np.zeros((chunk_size - N % chunk_size, x.shape[1]))), axis=0)
-    x_pad = x_pad.reshape(-1, chunk_size, x.shape[1])
-    K = broadcast_kernel_parallel_chunked_eval(kernel, x_pad, y).reshape(-1, M)
-    if N % chunk_size != 0:
-        K = K[:N]
-    return K
-
 @nb.jit()
 def broadcast_kernel(kernel, x, y):
     """
@@ -150,3 +125,12 @@ def broadcast_kernel(kernel, x, y):
     if transpose:
         K = K.T
     return K
+
+@nb.jit(parallel=True)
+def kernel_avg(kernel, y, avg_pts):
+    n, m = len(avg_pts), len(y)
+    v0 = np.zeros((m,))
+    for i in nb.prange(n):
+        kxy = kernel(avg_pts[i], y)
+        v0 += kxy
+    return v0 / n

@@ -2,9 +2,6 @@
     "rng_seed": 74291,
     "algorithm_name": "DiscrepancyMinimizingGradientDescent",
     "params": {
-        "hyperparams": {
-            "centroid_step_size": 1.0
-        },
         "solution": {
             "K": 3,
             "freeze_init": 0
@@ -19,7 +16,8 @@
             "R": 2
         },
         "optimization": {
-            "T": 500
+            "T": 500,
+            "step_size": 1.0
         },
         "kernel": {
             "kernel_name": "gaussian_kernel",

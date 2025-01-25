@@ -47,7 +47,7 @@ class KernelBandwidthScheduler(ABC):
         return self.kernel_inst.kernel
 
     def GetPreKernel(self):
-        return self.kernel_inst.pre_kernel
+        return self.kernel_inst.log_kernel
 
     def GetKernelGrad2(self):
         return self.kernel_inst.kernel_grad2

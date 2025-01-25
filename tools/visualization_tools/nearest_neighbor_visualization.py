@@ -56,10 +56,11 @@ def labelled_nearest_neighbors(nodes, data, labels, num_neighbors):
         node_labels[i] = get_assigned_label(neighbor_idxs[i], labels)
     return neighbor_idxs, node_labels
 
-def plot_nearest_neighbors(nodes_0, weights_0, nodes_T, weights_T, data, labels_data, r, alg_name, plot_path, num_neighbors = 5, use_images = None):
+def plot_nearest_neighbors(nodes_0, weights_0, nodes_T, weights_T, data, labels_data, r, alg_name, plot_path, show_plots, num_neighbors = 5, use_images = None):
     if use_images is None: # Rudimentary check: see if the data is square and larger than 10x10
         use_images = data.shape[1] > 100 and int(np.sqrt(data.shape[1]))**2 == data.shape[1]
     neighbor_idxs, labels_T = labelled_nearest_neighbors(nodes_T, data, labels_data, num_neighbors)
+    show_plot_fcn = plt.show if show_plots else plt.close
     # Plot nearest neighbors as images if the data is in image format
     if use_images:
         print("Plotting nearest neighbors as images, {}, {}...".format(plot_path, r))
@@ -67,16 +68,17 @@ def plot_nearest_neighbors(nodes_0, weights_0, nodes_T, weights_T, data, labels_
         # Plot nearest neighbors
         image_nearest_neighbors(nodes_T, data, labels_data, neighbor_idxs, labels_T, plot_title)
         plt.savefig(os.path.join(plot_path, f"nearest_neighbors_r_{r}.png"))
-        plt.show()
+        show_plot_fcn()
 
     # Plot distribution of assigned labels compared to true distribution of assigned labels
     if labels_T is not None:
         _, labels_0 = labelled_nearest_neighbors(nodes_0, data, labels_data, num_neighbors)
         # Find offset to align the histograms according to the number of unique labels
-        visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path)
+        visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path, show_plots)
     return labels_T
 
-def visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path):
+def visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels_data, r, alg_name, plot_path, show_plots):
+    show_plot_fcn = plt.show if show_plots else plt.close
     freqs_data = np.bincount(labels_data)/len(labels_data)
     K = len(freqs_data)
     label_locations = np.arange(K)
@@ -97,11 +99,11 @@ def visualize_label_frequencies(labels_0, weights_0, labels_T, weights_T, labels
     ax.legend()
     ax.set_xticks(label_locations + offsets[len(offsets)//2], labels=label_locations)
     plt.savefig(os.path.join(plot_path, f"assigned_labels_r_{r}.png"))
-    plt.show()
+    show_plot_fcn()
 
-def nearest_neighbors(centroid_trajectory, weight_trajectory, data_array, labels, alg_name, plot_path, **kwargs):
+def nearest_neighbors(centroid_trajectory, weight_trajectory, data_array, labels, alg_name, plot_path, show_plots, **kwargs):
     R = len(centroid_trajectory)
     for r in range(R):
         c_r_0, w_r_0 = centroid_trajectory[r, 0], weight_trajectory[r, 0]
         c_r_T, w_r_T = centroid_trajectory[r, -1], weight_trajectory[r, -1]
-        plot_nearest_neighbors(c_r_0, w_r_0, c_r_T, w_r_T, data_array, labels, r, alg_name, plot_path, **kwargs)
+        plot_nearest_neighbors(c_r_0, w_r_0, c_r_T, w_r_T, data_array, labels, r, alg_name, plot_path, show_plots, **kwargs)

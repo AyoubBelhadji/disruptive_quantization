@@ -137,8 +137,8 @@ def kernel_avg(kernel, y, avg_pts):
 
 @nb.jit(parallel=True)
 def kernel_grad2_avg(kernel_grad2, y, avg_pts):
-    n, (m, d) = len(avg_pts), y.shape
-    v1 = np.zeros((m, d))
+    n = len(avg_pts)
+    v1 = np.zeros_like(y)
     for i in nb.prange(n):
         kxy = kernel_grad2(avg_pts[i], y)
         v1 += kxy

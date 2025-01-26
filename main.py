@@ -9,7 +9,6 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import os
 import argparse
-import matplotlib.pyplot as plt
 
 # Import relevant functions
 from functions import kernels, initial_distributions, noise_generators
@@ -17,7 +16,7 @@ from functions.time_parameterizations import (
     LinearTimeParameterization,
     LogarithmicTimeParameterization,
 )
-from tools import files_tools, visualization_tools, AlgorithmManager
+from tools import files_tools, visualization_tools, AlgorithmManager, metrics
 from tools.simulation_manager import SimulationManager
 
 # Map function names to function objects
@@ -144,7 +143,26 @@ def create_visualizations(
             print("No labels available for nearest neighbors visualization")
 
 
-def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
+def create_results(
+    algorithm_name,
+    y_array,
+    w_array,
+    data,
+    params,
+    subpath,
+):
+    # Calculate the MMD values, Voronoi MSE, Hausdorff, log determinant distance
+    mmd_folder_serial = os.path.join("experiments", "sandbox", subpath)
+    print("Saving results in ", mmd_folder_serial)
+    os.makedirs(mmd_folder_serial, exist_ok=True)
+    mmd_self = metrics.Self_MMD_Dict(params["dataset_name"], data.shape[0])
+    kernel = params["kernel"].GetKernelInstance()
+    metrics.calculate_all_metrics(
+        algorithm_name, y_array, w_array, data, kernel, mmd_self, subpath
+    )
+
+
+def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, debug):
     # Load available algorithms
     algorithm_manager = AlgorithmManager(debug=debug)
 
@@ -182,7 +200,15 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
             subpath = os.path.join(output_subdir, experiment_full_id)
             c_array = algorithm.c_array_trajectory
             w_array = algorithm.w_array_trajectory
-
+            if calc_results:
+                create_results(
+                    algorithm_name,
+                    c_array,
+                    w_array,
+                    data,
+                    params,
+                    subpath,
+                )
             create_visualizations(
                 algorithm_name,
                 c_array,
@@ -218,6 +244,7 @@ parser.add_argument(
     type=str,
     default="examples",
 )
+parser.add_argument("-r", "--results", help="Calculate results", action="store_true")
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 
 # Main execution
@@ -229,6 +256,7 @@ if __name__ == "__main__":
     plot_nns = args.neighbors
     show_plots = args.plots
     config_subdir = args.dir
+    calc_results = args.results
     debug = args.debug
 
     main(
@@ -237,5 +265,6 @@ if __name__ == "__main__":
         plot_nns,
         show_plots,
         config_subdir,
+        calc_results,
         debug,
     )

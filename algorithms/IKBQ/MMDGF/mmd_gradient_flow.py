@@ -9,6 +9,7 @@ import numpy as np
 import numba as nb
 from scipy.integrate import solve_ivp
 from tools.utils import kernel_grad2_avg
+from tools.ode import GradientFlowIntegrator
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import (
     IterativeKernelBasedQuantization,
@@ -30,21 +31,17 @@ class MmdGradientFlow(IterativeKernelBasedQuantization):
         super().__init__(params)
         self.name = "MMDGF"
         self.step_size = params.get("step_size")
-        self.ODE_solver_str = params.get("ODE_solver", "RK45")
-        self.W2_ODE_solver = (
-            self.Solve_W2_ODE_Scipy
-            if self.ODE_solver_str != "Euler"
-            else self.Solve_W2_ODE_Euler
-        )
+        ODE_solver_str = params.get("ODE_solver", "RK45")
+        self.integrator = GradientFlowIntegrator(ODE_solver_str)
         self.time_parameterization = params.get("time_parameterization")
         self.time_parameterization.SetLength(self.T)
         self.params = params
+        self.steps_per_iteration = params.get("steps_per_iteration", 1)
 
         self.kernel_scheduler = params.get("kernel")
         self.y_workspace = np.empty((self.K, self.d))
         self.w_workspace = np.ones((self.K,))/self.K
         self.ydot_workspace = np.empty((self.K, self.d))
-        self.diff_workspace = self.ydot_workspace.reshape(-1)
 
     def calculate_weights(self, *_):
         return self.w_workspace
@@ -61,35 +58,9 @@ class MmdGradientFlow(IterativeKernelBasedQuantization):
         self.kernel_grad2 = self.kernel_scheduler.GetKernelGrad2()
 
         # Solve the ODE
-        self.W2_ODE_solver(tspan, y_t, y_tplus1)
-
-    def Solve_W2_ODE_Scipy(self, tspan, y_t, y_tplus1):
-        """
-        Solve the Wasserstein mean-field ODE over the given time span
-        """
-        state_1 = solve_ivp(
-            self.WFR_ODE,
-            tspan,
-            y_t.reshape(-1),
-            t_eval=(tspan[1],),
-            method=self.ODE_solver_str,
-        )
-        if len(state_1.y) == 0:
-            raise ValueError(f"ODE solver failed to converge for {tspan}, {state_1.y}")
-        y_tplus1[:] = state_1.y.reshape((self.K, self.d))
-
-    def Solve_W2_ODE_Euler(self, tspan, y_t, y_tplus1):
-        """
-        Solve the Wasserstein mean-field ODE over the given time span
-        """
-        t0, t1 = tspan
-        num_steps = self.steps_per_iteration
-        dt = (t1 - t0) / num_steps
         y_tplus1[:] = y_t[:]
-        y_tplus1_vec = y_tplus1.reshape(-1)
-        for t in np.linspace(t0, t1, num_steps, endpoint=False):
-            diff = self.WFR_ODE(t, y_tplus1_vec.reshape(-1))
-            y_tplus1_vec[:] += dt * diff
+        # self.W2_ODE_solver(tspan, y_t, y_tplus1)
+        self.integrator(y_tplus1.reshape(-1), self.WFR_ODE, tspan[1]-tspan[0], self.steps_per_iteration)
 
     def WFR_ODE(self, _, y_t_vec):
         """

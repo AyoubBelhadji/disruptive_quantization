@@ -9,7 +9,7 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import numpy as np
 import matplotlib.pyplot as plt
-import tools.mmd_tools as mmd
+from tools import metrics
 
 import os
 
@@ -120,8 +120,8 @@ def calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, su
         "experiments", "sandbox", subpath)
     os.makedirs(mmd_folder_serial, exist_ok=True)
 
-    mmd_values = mmd.mmd_array(c_array, w_array, data_array, kernel, mmd_self)
-    logdets = mmd.logdet_array(c_array, kernel)
+    mmd_values = metrics.mmd_array(c_array, w_array, data_array, kernel, mmd_self)
+    logdets = metrics.logdet_array(c_array, kernel)
 
     # Save the mmd_values and logdets
     np.save(os.path.join(mmd_folder_serial, "mmd_values.npy"), mmd_values)
@@ -137,7 +137,7 @@ def evolution_weights_mmd(alg_name, c_array, w_array, data_array, kernel, datase
     mmd_folder_plots = os.path.join("figures", subpath, "plots")
     os.makedirs(mmd_folder_plots, exist_ok=True)
 
-    mmd_self = mmd.Self_MMD_Dict(dataset_name, data_array.shape[0])
+    mmd_self = metrics.Self_MMD_Dict(dataset_name, data_array.shape[0])
     mmd_values, logdets = calculate_mmd_and_logdets(c_array, w_array, data_array, kernel, mmd_self, subpath)
 
     w_sums = w_array.sum(axis=-1)

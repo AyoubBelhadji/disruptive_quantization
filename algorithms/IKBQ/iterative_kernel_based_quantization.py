@@ -29,7 +29,7 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.data_array = None
         self.kernel_scheduler = params.get('kernel')
         self.initial_distribution = params.get('initial_distribution')
-        self.freeze_init = params.get('freeze_init')
+        self.freeze_init = params.get('freeze_init', False)
 
         self.domain = params.get('domain')
         self.noise_schedule_function = params.get('noise_schedule_function')

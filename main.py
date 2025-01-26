@@ -260,6 +260,9 @@ if __name__ == "__main__":
     config_subdir = args.dir
     calc_results = args.results
     debug = args.debug
+    if debug:
+        import faulthandler
+        faulthandler.enable()
 
     main(
         plot_gif,

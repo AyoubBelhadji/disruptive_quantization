@@ -45,12 +45,7 @@ def calcluate_all_metrics_impl(all_nodes, all_node_weights, data, kernel, data_m
         logdets[i] = metrics.logdet(Y, kernel)
         haussdorffs[i] = metrics.hausdorff_distance(Y, data)
         voronoi_mses[i] = metrics.voronoi_mse(Y, data)
-    return {
-        "mmd": mmds,
-        "logdet": logdets,
-        "haussdorff": haussdorffs,
-        "voronoi_mse": voronoi_mses,
-    }
+    return mmds, logdets, haussdorffs, voronoi_mses
 
 
 def calculate_all_metrics(alg_name, y_array, w_array, data, kernel, mmd_self, subpath):
@@ -64,8 +59,14 @@ def calculate_all_metrics(alg_name, y_array, w_array, data, kernel, mmd_self, su
     all_metrics = calcluate_all_metrics_impl(
         all_nodes, all_node_weights, data, kernel_eval, data_mmd
     )
+    all_metrics_dict = {
+        "mmd": all_metrics[0],
+        "logdet": all_metrics[1],
+        "haussdorff": all_metrics[2],
+        "voronoi_mse": all_metrics[3],
+    }
     all_metrics_shaped = {
-        k: v.reshape(y_array.shape[:-2]) for (k, v) in all_metrics.items()
+        k: v.reshape(y_array.shape[:-2]) for (k, v) in all_metrics_dict.items()
     }
     all_metrics_shaped["alg_name"] = alg_name
     with open(os.path.join(metric_serialize_path, "all_metrics.pkl"), "wb") as f:

@@ -104,13 +104,7 @@ def create_visualizations(
         )
 
     if plot_mmd:
-        if "kernel" in params:
-            test_kernel = params["kernel"].GetKernelInstance()
-        else:
-            test_kernel_str = params.get("test_kernel", "gaussian_kernel")
-            test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
-            test_kernel_fcn = function_map[test_kernel_str]
-            test_kernel = test_kernel_fcn(test_kernel_bandwidth)
+        test_kernel = params["test_kernel"]
 
         visualization_tools.evolution_weights_mmd(
             algorithm_name,
@@ -156,7 +150,7 @@ def create_results(
     print("Saving results in ", mmd_folder_serial)
     os.makedirs(mmd_folder_serial, exist_ok=True)
     mmd_self = metrics.Self_MMD_Dict(params["dataset_name"], data.shape[0])
-    kernel = params["kernel"].GetKernelInstance()
+    kernel = params["test_kernel"]
     metrics.calculate_all_metrics(
         algorithm_name, y_array, w_array, data, kernel, mmd_self, subpath
     )
@@ -181,13 +175,10 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, 
         try:
             # Initialize and run the algorithm
             algorithm = algorithm_manager.get_algorithm(algorithm_name, params)
-            # algorithm.run(data)
-            sim_manager.run_simulation(data, algorithm, algorithm_name)
+            sim_manager.run_simulation(data, algorithm, algorithm_name, config_filename)
             # Use the filename (without extension) as the experiment name
             experiment_name = ".".join(config_filename.split(".")[:-1])
             comment = f"Experiment based on {config_filename}"
-
-            print(f"Successfully ran {algorithm_name} for {config_filename}")
 
             # Save the experiment results
             experiment_full_id = sim_manager.save_last_experiment(
@@ -198,8 +189,18 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, 
             )
 
             subpath = os.path.join(output_subdir, experiment_full_id)
-            c_array = algorithm.c_array_trajectory
-            w_array = algorithm.w_array_trajectory
+            c_array = algorithm.y_trajectory
+            w_array = algorithm.w_trajectory
+
+            if "kernel" in params:
+                test_kernel = params["kernel"].GetKernelInstance()
+            else:
+                test_kernel_str = params.get("test_kernel", "gaussian_kernel")
+                test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
+                test_kernel_fcn = function_map[test_kernel_str]
+                test_kernel = test_kernel_fcn(test_kernel_bandwidth)
+            params["test_kernel"] = test_kernel
+
             if calc_results:
                 create_results(
                     algorithm_name,
@@ -209,6 +210,7 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, 
                     params,
                     subpath,
                 )
+
             create_visualizations(
                 algorithm_name,
                 c_array,

@@ -35,8 +35,8 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.noise_schedule_function = params.get('noise_schedule_function')
         self.use_projection = params.get('use_projection')
 
-        self.c_array_trajectory = np.zeros((self.R, self.T, self.K, self.d))
-        self.w_array_trajectory = np.zeros((self.R, self.T, self.K))
+        self.y_trajectory = np.zeros((self.R, self.T, self.K, self.d))
+        self.w_trajectory = np.zeros((self.R, self.T, self.K))
 
         self.params = params
 
@@ -67,17 +67,17 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         for r in range(self.R):
             self.kernel_scheduler.IncrementSchedule()
             if self.freeze_init:
-                self.c_array_trajectory[r, 0, :, :] = c_0_array
+                self.y_trajectory[r, 0, :, :] = c_0_array
             else:
-                self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(
+                self.y_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(
                     self.K, self.data_array)
 
-            self.w_array_trajectory[r, 0, :] = self.calculate_weights(
-                self.c_array_trajectory[r, 0, :, :], 0, np.ones(self.K)/self.K)
+            self.w_trajectory[r, 0, :] = self.calculate_weights(
+                self.y_trajectory[r, 0, :, :], 0, np.ones(self.K)/self.K)
 
             for t in tqdm(range(self.T - 1), position=0):
-                c_t = self.c_array_trajectory[r, t, :, :]
-                w_t = self.w_array_trajectory[r, t, :]
+                c_t = self.y_trajectory[r, t, :, :]
+                w_t = self.w_trajectory[r, t, :]
                 c_t_plus_1 = self.calculate_centroids(c_t, t, w_t)
 
                 # Adjust the centroids according to noise schedule
@@ -86,10 +86,10 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
                 if self.use_projection:
                     c_t_plus_1[:] = self.domain.project(c_t_plus_1)
 
-                self.c_array_trajectory[r, t+1, :, :] = c_t_plus_1
-                self.w_array_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)
+                self.y_trajectory[r, t+1, :, :] = c_t_plus_1
+                self.w_trajectory[r, t+1, :] = self.calculate_weights(c_t, t, w_t)
 
-        return {"centroids": self.c_array_trajectory, "weights": self.w_array_trajectory}
+        return {"centroids": self.y_trajectory, "weights": self.w_trajectory}
 
     @abstractmethod
     def calculate_weights(self, c_array: np.ndarray, t: float, w_array: np.ndarray):

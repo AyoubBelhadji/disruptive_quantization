@@ -26,8 +26,8 @@ class KmeansClustering(AbstractAlgorithm):
         self.N = params.get('N')
         self.data_array = None
 
-        self.c_array_trajectory = np.zeros((self.R, self.T, self.K, self.d))
-        self.w_array_trajectory = np.zeros((self.R, self.T, self.K))
+        self.y_trajectory = np.zeros((self.R, self.T, self.K, self.d))
+        self.w_trajectory = np.zeros((self.R, self.T, self.K))
 
         self.labels = np.zeros((self.N), dtype=np.int32)
         self.label_workspace = np.zeros((self.N, self.K))
@@ -54,21 +54,21 @@ class KmeansClustering(AbstractAlgorithm):
 
         for r in range(self.R):
             if self.freeze_init:
-                self.c_array_trajectory[r, 0, :, :] = c_0_array
+                self.y_trajectory[r, 0, :, :] = c_0_array
             else:
-                self.c_array_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(self.K, data_array)
+                self.y_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(self.K, data_array)
 
             for t in tqdm(range(self.T), position=0):
-                c_t = self.c_array_trajectory[r, t, :, :]
-                w_t = self.w_array_trajectory[r, t, :]
+                c_t = self.y_trajectory[r, t, :, :]
+                w_t = self.w_trajectory[r, t, :]
                 self.calculate_labels(c_t)
                 self.calculate_weights(w_t)
                 if t == self.T - 1:
                     break # Skip calculating next nodes for last iteration
-                c_tplus1 = self.c_array_trajectory[r, t+1, :, :]
+                c_tplus1 = self.y_trajectory[r, t+1, :, :]
                 self.calculate_centroids(c_tplus1)
 
-        return {"centroids": self.c_array_trajectory, "weights": self.w_array_trajectory}
+        return {"centroids": self.y_trajectory, "weights": self.w_trajectory}
 
     def calculate_labels(self, c_array):
         # Calculate L2 distance between each pair of data points and centroids

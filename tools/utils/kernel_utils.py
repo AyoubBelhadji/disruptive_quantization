@@ -87,6 +87,16 @@ def kernel_avg(kernel, y, avg_pts):
     return v0 / n
 
 @nb.jit(parallel=True)
+def kernel_bar_moment(kernel_bar, y, avg_pts):
+    n = len(avg_pts)
+    v1 = np.zeros_like(y)
+    for i in nb.prange(n):
+        x = avg_pts[i]
+        kxy = kernel_bar(avg_pts[i], y)
+        v1 += np.outer(kxy, x)
+    return v1 / n
+
+@nb.jit(parallel=True)
 def kernel_grad2_avg(kernel_grad2, y, avg_pts):
     n = len(avg_pts)
     v1 = np.zeros_like(y)

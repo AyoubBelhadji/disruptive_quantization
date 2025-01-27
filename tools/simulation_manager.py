@@ -45,8 +45,10 @@ class SimulationManager:
     def __init__(self):
         self.experiment = None
 
-    def run_simulation(self, data, algorithm, name, metadata=None):
+    def run_simulation(self, data, algorithm, name, config_filename, metadata=None):
+        print(f"Running {name} for {config_filename}...")
         result = algorithm.run(data)
+        print(f"Successfully ran {name} for {config_filename}")
         if metadata is None:
             metadata = {
                 "experiment_name": name,

@@ -9,7 +9,6 @@ Also also created on Mon Nov 18 6:22:10 2024
 
 import os
 import argparse
-import matplotlib.pyplot as plt
 
 # Import relevant functions
 from functions import kernels, initial_distributions, noise_generators
@@ -17,7 +16,7 @@ from functions.time_parameterizations import (
     LinearTimeParameterization,
     LogarithmicTimeParameterization,
 )
-from tools import files_tools, visualization_tools, AlgorithmManager
+from tools import files_tools, visualization_tools, AlgorithmManager, metrics
 from tools.simulation_manager import SimulationManager
 
 # Map function names to function objects
@@ -105,13 +104,7 @@ def create_visualizations(
         )
 
     if plot_mmd:
-        if "kernel" in params:
-            test_kernel = params["kernel"].GetKernelInstance()
-        else:
-            test_kernel_str = params.get("test_kernel", "gaussian_kernel")
-            test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
-            test_kernel_fcn = function_map[test_kernel_str]
-            test_kernel = test_kernel_fcn(test_kernel_bandwidth)
+        test_kernel = params["test_kernel"]
 
         visualization_tools.evolution_weights_mmd(
             algorithm_name,
@@ -144,7 +137,26 @@ def create_visualizations(
             print("No labels available for nearest neighbors visualization")
 
 
-def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
+def create_results(
+    algorithm_name,
+    y_array,
+    w_array,
+    data,
+    params,
+    subpath,
+):
+    # Calculate the MMD values, Voronoi MSE, Hausdorff, log determinant distance
+    mmd_folder_serial = os.path.join("experiments", "sandbox", subpath)
+    print("Saving results in ", mmd_folder_serial)
+    os.makedirs(mmd_folder_serial, exist_ok=True)
+    mmd_self = metrics.Self_MMD_Dict(params["dataset_name"], data.shape[0])
+    kernel = params["test_kernel"]
+    metrics.calculate_all_metrics(
+        algorithm_name, y_array, w_array, data, kernel, mmd_self, subpath
+    )
+
+
+def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, debug):
     # Load available algorithms
     algorithm_manager = AlgorithmManager(debug=debug)
 
@@ -163,13 +175,10 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
         try:
             # Initialize and run the algorithm
             algorithm = algorithm_manager.get_algorithm(algorithm_name, params)
-            # algorithm.run(data)
-            sim_manager.run_simulation(data, algorithm, algorithm_name)
+            sim_manager.run_simulation(data, algorithm, algorithm_name, config_filename)
             # Use the filename (without extension) as the experiment name
             experiment_name = ".".join(config_filename.split(".")[:-1])
             comment = f"Experiment based on {config_filename}"
-
-            print(f"Successfully ran {algorithm_name} for {config_filename}")
 
             # Save the experiment results
             experiment_full_id = sim_manager.save_last_experiment(
@@ -180,8 +189,27 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, debug):
             )
 
             subpath = os.path.join(output_subdir, experiment_full_id)
-            c_array = algorithm.c_array_trajectory
-            w_array = algorithm.w_array_trajectory
+            c_array = algorithm.y_trajectory
+            w_array = algorithm.w_trajectory
+
+            if "kernel" in params:
+                test_kernel = params["kernel"].GetKernelInstance()
+            else:
+                test_kernel_str = params.get("test_kernel", "gaussian_kernel")
+                test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
+                test_kernel_fcn = function_map[test_kernel_str]
+                test_kernel = test_kernel_fcn(test_kernel_bandwidth)
+            params["test_kernel"] = test_kernel
+
+            if calc_results:
+                create_results(
+                    algorithm_name,
+                    c_array,
+                    w_array,
+                    data,
+                    params,
+                    subpath,
+                )
 
             create_visualizations(
                 algorithm_name,
@@ -218,6 +246,7 @@ parser.add_argument(
     type=str,
     default="examples",
 )
+parser.add_argument("-r", "--results", help="Calculate results", action="store_true")
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 
 # Main execution
@@ -229,7 +258,11 @@ if __name__ == "__main__":
     plot_nns = args.neighbors
     show_plots = args.plots
     config_subdir = args.dir
+    calc_results = args.results
     debug = args.debug
+    if debug:
+        import faulthandler
+        faulthandler.enable()
 
     main(
         plot_gif,
@@ -237,5 +270,6 @@ if __name__ == "__main__":
         plot_nns,
         show_plots,
         config_subdir,
+        calc_results,
         debug,
     )

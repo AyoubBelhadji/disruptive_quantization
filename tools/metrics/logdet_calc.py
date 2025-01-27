@@ -21,6 +21,21 @@ def compute_all_kernel_logdets(all_nodes, kernel):
         logdets[i] = np.linalg.slogdet(K)[1]
     return logdets
 
+@nb.jit()
+def logdet(Y, kernel):
+    """
+    Compute the log-determinant of the kernel matrix for a set of nodes.
+
+    Parameters:
+    - Y: numpy array of shape (m, d), set of samples.
+    - kernel: a kernel function object with a `kernel` method.
+
+    Returns:
+    - logdet: the log-determinant of the kernel matrix for Y.
+    """
+    K = broadcast_kernel(kernel, Y, Y)
+    return np.linalg.slogdet(K)[1]
+
 def logdet_array(all_nodes, kernel_obj):
     kernel_eval = kernel_obj.kernel
     logdets = reshape_wrapper(compute_all_kernel_logdets, all_nodes, None, kernel_eval)

@@ -21,19 +21,6 @@ def grad_MMD_geom(prev_w, prev_nodes, new_nodes, data_array, kernel, MMD_regular
     ret = (1 + MMD_regularization)*KYY.dot(prev_w) - KYX_mean - MMD_regularization*KYY_bar.dot(prev_w)
     return ret
 
-# @nb.jit()
-# def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
-    # For each node X_i, computes E_pi[grad_2 K(Y, X_i)] - mean(w_j * grad_2 K(X_j, X_i))
-    # Where pi is the distribution of the data points Y = data_array
-    # And K is the kernel function
-    # And grad K is the gradient of the kernel function, which we assume is grad_2 k(Y,X) = X*k(Y, X)
-    # M = len(w_t)
-    # for i in range(M):
-    #     y_dot_i  = w_t.dot(kernel_grad2(y_t, y_t[i]))
-    #     y_dot_i -= np.sum(kernel_grad2(data_array, y_t[i]), axis=0)/len(data_array)
-    #     y_dot_i *= -w_t[i]
-    #     y_t[i] += step_sz * y_dot_i
-
 # Transpose of above function
 @nb.jit(parallel=True)
 def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
@@ -45,7 +32,7 @@ def mmd_W2_grad_step(y_t, w_t, kernel_grad2, data_array, step_sz):
         dkxy += dkxy_idx/sqrt_N
     for y_idx in range(M):
         y_inc = w_t.dot(kernel_grad2(y_t, y_t[y_idx])) - dkxy[y_idx]/sqrt_N
-        y_t[y_idx] -= step_sz * w_t[y_idx] * y_inc
+        y_t[y_idx] -= step_sz * y_inc
 
 class InteractionForceTransportFlow(IterativeKernelBasedQuantization):
 

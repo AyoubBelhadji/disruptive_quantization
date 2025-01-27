@@ -8,7 +8,6 @@ Created on 12/02/2024 13:13:00
 import numpy as np
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
-from tools.utils import proj_simplex
 
 class DiscrepancyMinimizingGradientDescent(IterativeKernelBasedQuantization):
 

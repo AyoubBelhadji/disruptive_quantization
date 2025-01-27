@@ -42,7 +42,8 @@ def find_kwarg_combo_keys(flattened_template: dict, separator: str, **kwargs):
 
 def kwarg_combo_str(kwarg_combo: dict):
     """ Create a unique string identifier for a kwarg combo. """
-    return "_".join([f"{key}{value}" for key, value in kwarg_combo.items()])
+    val_fcn = lambda v: v.split('_')[0] if isinstance(v,str) else v
+    return "_".join([f"{key.split('_')[0]}{val_fcn(value)}" for key, value in kwarg_combo.items()])
 
 def create_new_config(flattened_template: dict, kwarg_combo: dict, kwarg_combo_keys: dict):
     """ Create a new config based on the template and a kwarg combo. """
@@ -108,7 +109,7 @@ def main():
     kwargs = {}
     for kwarg in args.kwargs:
         key, values = kwarg.split("=")
-        kwargs[key] = list(map(parse_kwarg_val, values.split(",")))
+        kwargs[key] = list(map(parse_kwarg_val, filter(None,values.split(","))))
     generate_configs(args.dest_dir, args.template_file, args.separator, **kwargs)
 
 def example():

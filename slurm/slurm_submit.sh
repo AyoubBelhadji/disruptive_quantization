@@ -2,4 +2,4 @@
 cd ..
 source activate idp
 export LOCKFILE_PATH=/state/partition1/user/$USER/LOCKFILE
-python main.py -rmd test
+python main.py -rmd mnist$LLSUB_RANK

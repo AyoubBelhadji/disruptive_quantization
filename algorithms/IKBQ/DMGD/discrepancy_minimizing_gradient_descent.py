@@ -8,17 +8,24 @@ Created on 12/02/2024 13:13:00
 import numpy as np
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import IterativeKernelBasedQuantization
+from tools.utils import kernel_avg, kernel_grady_avg, broadcast_kernel
+
+def calculate_v1_hat(kernel, w, y, avg_pts):
+    v1_hat = kernel_grady_avg(kernel.kernel_grad2, y, avg_pts)
+    for i in range(len(y)):
+        v1_hat[i] += w.dot(kernel.kernel_bar(y, y[i])) * y[i]
+    return v1_hat
 
 class DiscrepancyMinimizingGradientDescent(IterativeKernelBasedQuantization):
 
     def __init__(self, params):
         super().__init__(params)
         self.name = "DMGD"
-        self.centroid_step_size = params.get('step_size')
+        self.step_size = params.get('step_size')
         self.params = params
 
         self.kernel_scheduler = params.get('kernel')
-        self.c_workspace = np.empty((self.K, self.d))
+        self.y_workspace = np.empty((self.K, self.d))
         self.w_workspace = np.empty((self.K,))
 
         # Workspace for v0, KDE of zeroth moment
@@ -34,20 +41,16 @@ class DiscrepancyMinimizingGradientDescent(IterativeKernelBasedQuantization):
         return self.w_workspace
 
     def calculate_centroids(self, y_t, t, w_t):
-        eta = self.centroid_step_size
-        # Make sure the weights are calculated
-        if t == 0:
-            self.calculate_weights_internal(y_t)
-            w_t = self.w_workspace
-        self.kernel_workspace[:] *= w_t
-        self.c_workspace[:] = y_t - eta * w_t[:,np.newaxis] * (self.kernel_workspace.dot(y_t) - self.v1_workspace)
-        return self.c_workspace
+        eta = self.step_size
+        kernel = self.kernel_scheduler.GetKernelInstance()
+        self.calculate_weights_internal(y_t)
+        KbarW = broadcast_kernel(kernel.kernel_bar, y_t, y_t) * self.w_workspace
+        v1_hat = calculate_v1_hat(kernel, self.w_workspace, y_t, self.data_array)
+        self.y_workspace[:] = y_t - eta * (self.w_workspace[:,np.newaxis] * (KbarW.dot(y_t) - v1_hat))
+        return self.y_workspace
 
     def calculate_weights_internal(self, y_t):
-        self.kernel = self.kernel_scheduler.GetKernel()
-        for i in range(self.K):
-            self.kernel_workspace[i] = self.kernel(y_t, y_t[i]).flatten()
-            Kx = self.kernel(self.data_array, y_t[i]).flatten()
-            self.v0_workspace[i] = Kx.mean()
-            self.v1_workspace[i] = Kx.dot(self.data_array) / self.data_array.shape[0]
-        self.w_workspace[:] = np.linalg.solve(self.kernel_workspace, self.v0_workspace)
+        kernel = self.kernel_scheduler.GetKernel()
+        v0 = kernel_avg(kernel, y_t, self.data_array)
+        Ky = broadcast_kernel(kernel, y_t, y_t)
+        self.w_workspace[:] = np.linalg.solve(Ky, v0)

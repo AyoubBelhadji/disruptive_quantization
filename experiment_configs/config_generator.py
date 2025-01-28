@@ -42,7 +42,8 @@ def find_kwarg_combo_keys(flattened_template: dict, separator: str, **kwargs):
 
 def kwarg_combo_str(kwarg_combo: dict):
     """ Create a unique string identifier for a kwarg combo. """
-    val_fcn = lambda v: v.split('_')[0] if isinstance(v,str) else v
+    def val_fcn(v):
+        return v.split('_')[0] if isinstance(v,str) else v
     return "_".join([f"{key.split('_')[0]}{val_fcn(value)}" for key, value in kwarg_combo.items()])
 
 def create_new_config(flattened_template: dict, kwarg_combo: dict, kwarg_combo_keys: dict):

@@ -7,9 +7,33 @@ Created on Mon Nov  25 11:37:45 2024
 """
 
 from algorithms.base_algorithm import AbstractAlgorithm
-from scipy.spatial.distance import cdist
 import numpy as np
 from tqdm import tqdm
+import numba as nb
+
+@nb.jit(parallel=True)
+def calculate_labels(labels, data_array, c_array):
+    # Calculate L2 distance between each pair of data points and centroids
+    for i in nb.prange(data_array.shape[0]):
+        diff = data_array[i] - c_array
+        dists = np.sqrt(np.sum(diff**2, axis=-1))
+        labels[i] = np.argmin(dists)
+
+@nb.jit()
+def calculate_weights(w_array, labels, N):
+    # Use labels to calculate weights
+    w_array[:] = np.bincount(labels, minlength=len(w_array))
+    w_array[:] /= N
+
+@nb.jit()
+def calculate_centroids(y_array, prev_y, data_array, labels):
+    # Use labels to calculate centroids
+    for k in range(len(y_array)):
+        data_k = data_array[labels == k]
+        if len(data_k) == 0:
+            y_array[k] = prev_y[k]
+        else:
+            y_array[k] = np.sum(data_k, axis=0)/len(data_k)
 
 class KmeansClustering(AbstractAlgorithm):
     def __init__(self, params):
@@ -30,7 +54,6 @@ class KmeansClustering(AbstractAlgorithm):
         self.w_trajectory = np.zeros((self.R, self.T, self.K))
 
         self.labels = np.zeros((self.N), dtype=np.int32)
-        self.label_workspace = np.zeros((self.N, self.K))
 
         self.params = params
 
@@ -59,28 +82,13 @@ class KmeansClustering(AbstractAlgorithm):
                 self.y_trajectory[r, 0, :, :] = self.initial_distribution.generate_samples(self.K, data_array)
 
             for t in tqdm(range(self.T), position=0):
-                c_t = self.y_trajectory[r, t, :, :]
+                y_t = self.y_trajectory[r, t, :, :]
                 w_t = self.w_trajectory[r, t, :]
-                self.calculate_labels(c_t)
-                self.calculate_weights(w_t)
+                calculate_labels(self.labels, self.data_array, y_t)
+                calculate_weights(w_t, self.labels, self.N)
                 if t == self.T - 1:
                     break # Skip calculating next nodes for last iteration
-                c_tplus1 = self.y_trajectory[r, t+1, :, :]
-                self.calculate_centroids(c_tplus1)
+                y_tplus1 = self.y_trajectory[r, t+1, :, :]
+                calculate_centroids(y_tplus1, y_t, self.data_array, self.labels)
 
         return {"centroids": self.y_trajectory, "weights": self.w_trajectory}
-
-    def calculate_labels(self, c_array):
-        # Calculate L2 distance between each pair of data points and centroids
-        cdist(self.data_array, c_array, 'euclidean', out=self.label_workspace)
-        self.labels[:] = self.label_workspace.argmin(axis=1, )
-
-    def calculate_weights(self, w_array):
-        # Use labels to calculate weights
-        w_array[:] = np.bincount(self.labels, minlength=self.K)
-        w_array[:] /= self.N
-
-    def calculate_centroids(self, c_array):
-        # Use labels to calculate centroids
-        for k in range(self.K):
-            c_array[k] = np.mean(self.data_array[self.labels == k], axis=0)

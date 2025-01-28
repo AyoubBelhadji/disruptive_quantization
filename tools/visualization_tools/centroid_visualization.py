@@ -48,15 +48,15 @@ def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath
     plt.close(fig)  # Close the figure to avoid displaying static plots
 
 
-def centroid_dynamics(alg_name, c_array_trajectory, data_array, subpath, file_format="gif", limit_margin=0.1):
+def centroid_dynamics(alg_name, y_trajectory, data_array, subpath, file_format="gif", limit_margin=0.1):
     if data_array.shape[-1] != 2:
         print("Data array must have shape (N, 2) for visualizing centroid dynamics")
         return
-    R = c_array_trajectory.shape[0]
+    R = y_trajectory.shape[0]
     xlims = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
     ylims = expand_limits(np.min(data_array[:, 1]), np.max(
         data_array[:, 1]), limit_margin)
     for r in range(R):
-        centroids_r = c_array_trajectory[r]
+        centroids_r = y_trajectory[r]
         create_dynamics_gif(data_array, centroids_r, r, alg_name, file_format, subpath, xlim=xlims, ylim=ylims)

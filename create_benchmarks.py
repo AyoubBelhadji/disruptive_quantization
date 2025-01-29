@@ -14,19 +14,19 @@ def read_dataset(dataset, datapath = "datasets"):
         data = pickle.load(f)
         return data['data']
 
-def get_eigenvalues(kernel_class, bandwidth, data):
-    kernel = kernel_class(bandwidth)
+def get_eigenvalues(kernel_class, bandwidth, data, kernel_kwargs):
+    kernel = kernel_class(bandwidth, **kernel_kwargs)
     K = broadcast_kernel(kernel.kernel, data, data)/len(data)
     return np.linalg.eigvalsh(K)
 
-def produce_results(data, bandwidths):
+def produce_results(data, bandwidths, kernel_kwargs):
     all_eigenvalues = {}
     kernels = [("sqexp",GaussianKernel), ("matern",MaternKernel)]
 
     prog = tqdm(total=len(bandwidths)*len(kernels))
     for (kernel_name, kernel_class) in kernels:
         for bandwidth in bandwidths:
-            eigenvalues = get_eigenvalues(kernel_class, bandwidth, data)
+            eigenvalues = get_eigenvalues(kernel_class, bandwidth, data, kernel_kwargs)
             all_eigenvalues[(kernel_name, bandwidth)] = eigenvalues
             prog.update(1)
     return all_eigenvalues
@@ -42,14 +42,28 @@ def save_results(results, dataset, dataset_path = "datasets", file_name="eigenva
     with open(file_path, 'wb') as f:
         pickle.dump(results, f)
 
-if __name__ == '__main__':
+def get_args():
     parser = argparse.ArgumentParser()
     # Assume we use all available kernels
     # only args are a list of bandwidths separated by commas
     parser.add_argument('dataset', type=str)
     parser.add_argument('bandwidths', type=str)
-    args = parser.parse_args()
+    # Add parser keywords for kernel kwargs at end of input
+    parser.add_argument("kwargs", nargs="*")
+    return parser.parse_args()
+
+def parse_kwargs(kwargs):
+    def parse_value(value):
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    return {key: parse_value(value) for key, value in [kwarg.split("=") for kwarg in kwargs]}
+
+if __name__ == '__main__':
+    args = get_args()
     data = read_dataset(args.dataset)
+    kernel_kwargs = parse_kwargs(args.kwargs)
     bandwidths = [float(b) for b in args.bandwidths.split(",")]
-    results = produce_results(data, bandwidths)
+    results = produce_results(data, bandwidths, kernel_kwargs)
     save_results(results, args.dataset)

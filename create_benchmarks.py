@@ -16,7 +16,7 @@ def read_dataset(dataset, datapath = "datasets"):
 
 def get_eigenvalues(kernel_class, bandwidth, data):
     kernel = kernel_class(bandwidth)
-    K = broadcast_kernel(kernel.kernel, data, data)
+    K = broadcast_kernel(kernel.kernel, data, data)/len(data)
     return np.linalg.eigvalsh(K)
 
 def produce_results(data, bandwidths):
@@ -34,10 +34,12 @@ def produce_results(data, bandwidths):
 def save_results(results, dataset, dataset_path = "datasets", file_name="eigenvalues.pkl"):
     file_path = os.path.join(dataset_path, dataset, file_name)
     if os.path.exists(file_path):
-        with open(file_name, 'rb') as f:
+        with open(file_path, 'rb') as f:
             prev_results = pickle.load(f)
-            results.update(prev_results)
-    with open(file_name, 'wb') as f:
+            new_results = results
+            results = prev_results.copy()
+            results.update(new_results)
+    with open(file_path, 'wb') as f:
         pickle.dump(results, f)
 
 if __name__ == '__main__':

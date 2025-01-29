@@ -197,8 +197,17 @@ def main(plot_gif, plot_mmd, plot_nns, show_plots, config_subdir, calc_results, 
             else:
                 test_kernel_str = params.get("test_kernel", "gaussian_kernel")
                 test_kernel_bandwidth = params.get("test_kernel_bandwidth", 1.0)
+                test_kernel_kwargs = [(key,params[key]) for key in params.keys() if key.startswith("test_kernel")]
+                def val_fcn(val):
+                    try:
+                        return float(val)
+                    except ValueError:
+                        return val
+                start_idx = len("test_kernel_")
+                test_kernel_kwargs = {k[0][start_idx:]:val_fcn(k[1]) for k in test_kernel_kwargs}
+                test_kernel_kwargs.pop("bandwidth", None)
                 test_kernel_fcn = function_map[test_kernel_str]
-                test_kernel = test_kernel_fcn(test_kernel_bandwidth)
+                test_kernel = test_kernel_fcn(test_kernel_bandwidth, **test_kernel_kwargs)
             params["test_kernel"] = test_kernel
 
             if calc_results:

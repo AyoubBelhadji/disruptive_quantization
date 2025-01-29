@@ -82,7 +82,7 @@ def matern_p_plus_half(p):
 
 
 class MaternKernel:
-    def __init__(self, bandwidth, nu = 2.5):
+    def __init__(self, bandwidth, nu = 2.5, **_):
         self.sigma = bandwidth
         self.nu = nu
         if self.nu == 0.5:

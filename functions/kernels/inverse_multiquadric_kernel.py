@@ -44,7 +44,7 @@ def log_IMQ_negdiff(neg_power):
     return kernel_aux
 
 class InverseMultiQuadricKernel:
-    def __init__(self, bandwidth, power=0.5):
+    def __init__(self, bandwidth, power=0.5, **_):
         # Suggested bandwidth = 1/sqrt(2*dim) (Dwivedi, Mackey 2022)
         self.sigma = bandwidth
         self.neg_power = -power

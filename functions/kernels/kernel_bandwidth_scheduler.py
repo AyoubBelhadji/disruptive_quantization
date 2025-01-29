@@ -20,25 +20,28 @@ def KernelBandwidthScheduleFactory(kernel_name, kernel_params, function_map):
 
     kernel_schedule_constructor = function_map[schedule_function.get("bandwidth_schedule_function_name")]
     schedule_params = schedule_function.get("params")
-    return schedule_params, kernel_schedule_constructor(schedule_params, kernel_class)
+    return schedule_params, kernel_schedule_constructor(schedule_params, kernel_class, kernel_params)
 
 class KernelBandwidthScheduler(ABC):
     """
     Abstract class for kernel bandwidth scheduler. Subclasses must implement the get_bandwidth method.
     """
-    def __init__(self, _, kernel_constructor):
+    def __init__(self, kernel_params, kernel_constructor):
         # Get the kernel function from params
         self.iter = 0
         self.kernel_constructor = kernel_constructor
+        # remove key bandwidth from kernel_params
+        self.kernel_params = kernel_params.copy()
+        self.kernel_params.pop("bandwidth", None)
 
     def IncrementSchedule(self):
         """ Change kernel according to the current iteration """
         bandwidth = self.get_bandwidth()
-        self.KernelConstructor(bandwidth)
+        self.KernelConstructor(bandwidth, **self.kernel_params)
         self.iter += 1
 
     def KernelConstructor(self, bandwidth):
-        self.kernel_inst = self.kernel_constructor(bandwidth)
+        self.kernel_inst = self.kernel_constructor(bandwidth, **self.kernel_params)
 
     def GetKernelInstance(self):
         return self.kernel_inst
@@ -63,8 +66,8 @@ class KernelBandwidthScheduler(ABC):
 class ConstantKernelBandwidth(KernelBandwidthScheduler):
     """ Constant kernel bandwidth """
     def __init__(self, params, *args):
-        super().__init__(params, *args)
         self.bandwidth = params.get("bandwidth")
+        super().__init__(params, *args)
         self.KernelConstructor(self.bandwidth)
 
     def IncrementSchedule(self):

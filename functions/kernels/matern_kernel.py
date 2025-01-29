@@ -101,7 +101,7 @@ class MaternKernel:
             kernel_1d_log = matern_nu_2_5_log
             kernel_1d_negdiff_log = matern_nu_2_5_negdiff_log
         else:
-            raise ValueError("Unsupported value of nu. Supported values are 0.5, 1.5, and 2.5.")
+            raise ValueError(f"Unsupported value of nu={nu}. Supported values are 0.5, 1.5, and 2.5.")
         kernel_1d = nb.jit(kernel_1d)
         kernel_1d_negdiff = nb.jit(kernel_1d_negdiff)
         kernel_1d_log = nb.jit(kernel_1d_log)

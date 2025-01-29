@@ -11,7 +11,7 @@ import numpy as np
 import numba as nb
 
 class GaussianKernel:
-    def __init__(self, bandwidth):
+    def __init__(self, bandwidth, **_):
         self.sigma = bandwidth
         self.kernel = self.Gaussian_kernel(self.sigma)
         self.kernel_bar = self.Gaussian_kernel_bar(self.sigma)

@@ -8,7 +8,7 @@ Created on 12/02/2024 13:13:00
 import numpy as np
 import numba as nb
 from scipy.integrate import solve_ivp
-from tools.utils import kernel_grad2_avg
+from tools.utils import kernel_grady_avg
 from tools.ode import GradientFlowIntegrator
 
 from algorithms.IKBQ.iterative_kernel_based_quantization import (
@@ -19,7 +19,7 @@ from algorithms.IKBQ.iterative_kernel_based_quantization import (
 @nb.jit()
 def W2_ODE_diff(y_t, kernel_grad2, data_array, y_dot):
     M = len(y_t)
-    v1 = kernel_grad2_avg(kernel_grad2, y_t, data_array)
+    v1 = kernel_grady_avg(kernel_grad2, y_t, data_array)
     for i in range(M):
         y_dot[i] = v1[i]
         y_dot[i] -= np.sum(kernel_grad2(y_t, y_t[i]), axis=0) / M

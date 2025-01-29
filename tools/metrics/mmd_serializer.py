@@ -26,7 +26,7 @@ class Self_MMD_Dict():
         # Create dataset path
         dataset_path = os.path.join(dataset_prefix, dataset, MMD_VALS_FILENAME)
         self.path = dataset_path
-        self.lockfile_path = LOCKFILE_PATH if LOCKFILE_PATH is not None else os.path.join("./.keep")
+        self.lockfile_path = LOCKFILE_PATH if LOCKFILE_PATH is not None else os.path.join("./.LOCKFILE")
         # Create an instance correspondence to the file
         self.mmd_vals = None
         # Load mmd_vals.pkl if it exists

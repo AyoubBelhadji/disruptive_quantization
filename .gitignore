@@ -10,3 +10,4 @@ experiments/sandbox/**
 experiments/validated/**
 experiments/*.txt
 ! **/.keep
+.LOCKFILE

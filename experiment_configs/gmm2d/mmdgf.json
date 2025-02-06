@@ -1,0 +1,40 @@
+{
+    "algorithm_name": "MmdGradientFlow",
+    "rng_seed": 42,
+    "params": {
+        "solution": {
+            "K": 3
+        },
+        "hyperparams": {
+            "ODE_solver": "Euler"
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 2
+            }
+        },
+        "experience": {
+            "R": 100
+        },
+        "optimization": {
+            "T": 1000
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 5.0
+            }
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 1000
+            }
+        },
+        "dataset": {
+            "dataset_name": "gmm",
+            "N": 1000
+        }
+    }
+}

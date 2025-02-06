@@ -1,0 +1,32 @@
+{
+    "rng_seed": 42,
+    "algorithm_name": "DiscrepancyMinimizingGradientDescent",
+    "params": {
+        "solution": {
+            "K": 10
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 100
+            }
+        },
+        "experience": {
+            "R": 100
+        },
+        "optimization": {
+            "T": 1000,
+            "step_size": 1.0
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 5.0
+            }
+        },
+        "dataset": {
+            "dataset_name": "gmm100",
+            "N": 1000
+        }
+    }
+}

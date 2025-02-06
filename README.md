@@ -70,6 +70,7 @@ with np.load(path + "experiment_data.npz") as np_file:
 - For performance reasons, it is recommended that you use the Intel versions of the dependencies; for installation details, see [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-python-download.html?install-type=conda&python-conda=python-3_12&operatingsystem-conda=linux&packagetype-conda=idp-allcomponents).
 - To download the MNIST dataset, navigate to `datasets/mnist` and run `python mnist_data_handler.py`. While no other part of this library requires `torch`, we do require it (and `torchvision`) to handle the download and serialization of this dataset.
     - For `torch` installation instructions, see [here](https://pytorch.org/get-started/locally/).
+- If you get the error `libgomp: Thread creation failed: Resource temporarily unavailable`, try (in bash) `export NUMBA_NUM_THREADS=<num_threads>`, where `<num_threads>` is the number of threads you actually want to use. We've seen some occasional issues with hyperthreading.
 
 # Cite our work
 If you use this library, please cite it as so:

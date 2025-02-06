@@ -1,0 +1,33 @@
+{
+    "rng_seed": 43,
+    "algorithm_name": "MeanShift",
+    "params": {
+        "solution": {
+            "K": 10,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "uniform_distribution",
+            "params": {
+                "d": 784
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "T": 5000,
+            "step_size": 0.5
+        },
+        "kernel": {
+            "kernel_name": "matern_kernel",
+            "params": {
+                "nu": 1.5,
+                "bandwidth": 2.25
+            }
+        },
+        "dataset": {
+            "dataset_name": "mnist"
+        }
+    }
+}

@@ -3,3 +3,9 @@
 !examples
 !examples/*
 !*.py
+!gmm2d
+!gmm2d/*
+!gmm100d
+!gmm100d/*
+!mnist
+!mnist/*

@@ -7,5 +7,7 @@
 !gmm2d/*
 !gmm100d
 !gmm100d/*
-!mnist
-!mnist/*
+!mnist_R1
+!mnist_R10
+!mnist_R1/*
+!mnist_R10/*

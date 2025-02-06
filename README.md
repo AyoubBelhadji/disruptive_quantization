@@ -68,7 +68,8 @@ with np.load(path + "experiment_data.npz") as np_file:
 
 ### Other technical details
 - For performance reasons, it is recommended that you use the Intel versions of the dependencies; for installation details, see [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-python-download.html?install-type=conda&python-conda=python-3_12&operatingsystem-conda=linux&packagetype-conda=idp-allcomponents).
-- To download the MNIST dataset, navigate to `datasets/mnist` and run `python mnist_data_handler.py`. While no other part of this library requires `torch`, we do require it to handle the download and serialization of this dataset. For `torch` installation instructions, see [here](https://pytorch.org/get-started/locally/).
+- To download the MNIST dataset, navigate to `datasets/mnist` and run `python mnist_data_handler.py`. While no other part of this library requires `torch`, we do require it (and `torchvision`) to handle the download and serialization of this dataset.
+    - For `torch` installation instructions, see [here](https://pytorch.org/get-started/locally/).
 
 # Cite our work
 If you use this library, please cite it as so:

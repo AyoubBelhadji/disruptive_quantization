@@ -1,0 +1,39 @@
+{
+    "algorithm_name": "InteractionForceTransportFlow",
+    "rng_seed": 43,
+    "params": {
+        "hyperparams": {
+            "weight_regularization": 1e-3,
+            "weight_step_size": 0.8,
+            "use_WFR": false,
+            "project_simplex": true
+        },
+        "solution": {
+            "K": 10,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "uniform_distribution",
+            "params": {
+                "d": 784
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "step_size": 10,
+            "T": 5000
+        },
+        "kernel": {
+            "kernel_name": "matern_kernel",
+            "params": {
+                "bandwidth": 2.25,
+                "nu": 1.5
+            }
+        },
+        "dataset": {
+            "dataset_name": "mnist"
+        }
+    }
+}

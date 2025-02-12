@@ -1,0 +1,48 @@
+{
+    "algorithm_name": "MmdGradientFlow",
+    "rng_seed": 43,
+    "params": {
+        "solution": {
+            "K": 10,
+            "freeze_init": 0
+        },
+        "hyperparams": {
+            "ODE_solver": "Euler"
+        },
+        "initial_distribution": {
+            "distribution_name": "uniform_distribution",
+            "params": {
+                "d": 784
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "T": 5000,
+            "noise_schedule_function": {
+                "noise_schedule_function_name": "gaussian_sqrt_noise",
+                "params": {
+                    "d": 784,
+                    "beta_ns": 0.05
+                }
+            }
+        },
+        "kernel": {
+            "kernel_name": "matern_kernel",
+            "params": {
+                "bandwidth": 2.25,
+                "nu": 1.5
+            }
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 500
+            }
+        },
+        "dataset": {
+            "dataset_name": "mnist"
+        }
+    }
+}

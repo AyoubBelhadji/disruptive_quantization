@@ -1,0 +1,28 @@
+{
+    "algorithm_name": "KmeansClustering",
+    "rng_seed": 42,
+    "params": {
+        "hyperparams": {
+            "test_kernel": "gaussian_kernel",
+            "test_kernel_bandwidth": 5.0
+        },
+        "solution": {
+            "K": 10
+        },
+        "optimization": {
+            "T": 1000
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 100
+            }
+        },
+        "experience": {
+            "R": 100
+        },
+        "dataset": {
+            "dataset_name": "gmm100"
+        }
+    }
+}

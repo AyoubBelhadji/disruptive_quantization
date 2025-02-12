@@ -1,0 +1,42 @@
+{
+    "algorithm_name": "WassersteinFisherRao",
+    "rng_seed": 43,
+    "params": {
+        "solution": {
+            "K": 20,
+            "freeze_init": 0
+        },
+        "hyperparams": {
+            "point_accelerator": 25.0,
+            "ODE_solver": "RK4"
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 784
+            }
+        },
+        "experience": {
+            "R": 10
+        },
+        "optimization": {
+            "T": 250
+        },
+        "kernel": {
+            "kernel_name": "matern_kernel",
+            "params": {
+                "bandwidth": 2,
+                "nu": 1.5
+            }
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 1000
+            }
+        },
+        "dataset": {
+            "dataset_name": "mnist"
+        }
+    }
+}

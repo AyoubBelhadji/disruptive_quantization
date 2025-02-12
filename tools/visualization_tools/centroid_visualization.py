@@ -23,13 +23,17 @@ def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath
                label='Initial Centroids', alpha=1, marker='D')
     centroids_t_scatter = ax.scatter(
         centroids[0, :, 0], centroids[0, :, 1], color='green', alpha=1, label='Centroids', marker='P', s=100)
-
     def update(t):
         ax.set_title(f"Centroid dynamics, r={r}, t={t}, {alg_name}")
         centroids_t_scatter.set_offsets(centroids[t])
         return centroids_t_scatter
 
-    ani = FuncAnimation(fig, update, frames=T, interval=200)
+    max_every_frame_T = 500
+    if T <= max_every_frame_T:
+        frames = range(T)
+    else:
+        frames = np.unique(np.linspace(0, T - 1, max_every_frame_T).astype(int))
+    ani = FuncAnimation(fig, update, frames=frames, interval=200)
     folder_name = os.path.join(
         "figures", subpath, "gif")
     create_folder_if_needed(folder_name)
@@ -47,16 +51,21 @@ def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath
     ani.save(gif_path, writer=writer)
     plt.close(fig)  # Close the figure to avoid displaying static plots
 
-
-def centroid_dynamics(alg_name, y_trajectory, data_array, subpath, file_format="gif", limit_margin=0.1):
+def centroid_dynamics(alg_name, y_trajectory, data_array, subpath, file_format="mp4", limit_margin=0.2):
     if data_array.shape[-1] != 2:
         print("Data array must have shape (N, 2) for visualizing centroid dynamics")
         return
     R = y_trajectory.shape[0]
-    xlims = expand_limits(np.min(data_array[:, 0]), np.max(
+    xlims_data = expand_limits(np.min(data_array[:, 0]), np.max(
         data_array[:, 0]), limit_margin)
-    ylims = expand_limits(np.min(data_array[:, 1]), np.max(
+    xlims_centroids = expand_limits(np.min(y_trajectory[:, :, :, 0]), np.max(
+        y_trajectory[:, :, :, 0]), limit_margin)
+    ylims_data = expand_limits(np.min(data_array[:, 1]), np.max(
         data_array[:, 1]), limit_margin)
+    ylims_centroids = expand_limits(np.min(y_trajectory[:, :, :, 1]), np.max(
+        y_trajectory[:, :, :, 1]), limit_margin)
+    xlims = (min(xlims_data[0], xlims_centroids[0]), max(xlims_data[1], xlims_centroids[1]))
+    ylims = (min(ylims_data[0], ylims_centroids[0]), max(ylims_data[1], ylims_centroids[1]))
     for r in range(R):
         centroids_r = y_trajectory[r]
         create_dynamics_gif(data_array, centroids_r, r, alg_name, file_format, subpath, xlim=xlims, ylim=ylims)

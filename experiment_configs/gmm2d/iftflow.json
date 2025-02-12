@@ -1,0 +1,38 @@
+{
+    "algorithm_name": "InteractionForceTransportFlow",
+    "rng_seed": 42,
+    "params": {
+        "hyperparams": {
+            "weight_regularization": 1e-3,
+            "use_WFR": false,
+            "project_simplex": true
+        },
+        "solution": {
+            "K": 3,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "data_distribution",
+            "params": {
+                "d": 2
+            }
+        },
+        "experience": {
+            "R": 100
+        },
+        "optimization": {
+            "step_size": 2.0,
+            "T": 1000
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 5.0
+            }
+        },
+        "dataset": {
+            "dataset_name": "gmm",
+            "N": 1000
+        }
+    }
+}

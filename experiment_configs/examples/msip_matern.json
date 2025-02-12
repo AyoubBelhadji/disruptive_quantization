@@ -1,10 +1,7 @@
 {
     "rng_seed": 42,
-    "algorithm_name": "MultipleMeanShift",
+    "algorithm_name": "CorrectedMultipleMeanShift",
     "params": {
-        "hyperparams": {
-            "use_adjugate": true
-        },
         "solution": {
             "K": 3,
             "freeze_init": 0
@@ -40,7 +37,7 @@
         "kernel": {
             "kernel_name": "matern_kernel",
             "params": {
-                "nu": 2.5,
+                "nu": 1.5,
                 "bandwidth": 5.0
             }
         },

@@ -82,12 +82,14 @@ class ExponentialDecayKernelBandwidth(KernelBandwidthScheduler):
     Exponential decay kernel bandwidth scheduler:
     $$s = s_inf + (s_0 - s_{inf}) exp(a t)$$
     """
-    def __init__(self, params, *args):
-        super().__init__(params, *args)
-        self.bandwidth_decay_rate = params.get("bandwidth_decay_rate")
+    def __init__(self, schedule_params, kernel_class, kernel_params):
+        kernel_params = kernel_params.copy()
+        kernel_params.pop("bandwidth_schedule_function", None)
+        super().__init__(kernel_params, kernel_class)
+        self.bandwidth_decay_rate = schedule_params.get("bandwidth_decay_rate")
         assert self.bandwidth_decay_rate < 0, "Decay rate must be strictly negative"
-        self.bandwidth_start_value = params.get("bandwidth_start_value")
-        self.bandwidth_end_value = params.get("bandwidth_end_value")
+        self.bandwidth_start_value = schedule_params.get("bandwidth_start_value")
+        self.bandwidth_end_value = schedule_params.get("bandwidth_end_value")
 
     def get_bandwidth(self):
         return self.bandwidth_end_value + (self.bandwidth_start_value - self.bandwidth_end_value) * np.exp(self.bandwidth_decay_rate * self.iter)

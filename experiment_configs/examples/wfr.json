@@ -3,7 +3,7 @@
     "algorithm_name": "WassersteinFisherRao",
     "params": {
         "hyperparams": {
-            "point_accelerator": "bandwidth"
+            "point_accelerator": 25
         },
         "solution": {
             "K": 3,
@@ -16,10 +16,10 @@
             }
         },
         "experience": {
-            "R": 10
+            "R": 2
         },
         "optimization": {
-            "T": 1000,
+            "T": 150,
             "noise_schedule_function": {
                 "noise_schedule_function_name": "gaussian_sqrt_noise",
                 "params": {
@@ -44,7 +44,7 @@
         "time_parameterization": {
             "time_discretization_name": "linear_time_parameterization",
             "params": {
-                "end_time": 1000
+                "end_time": 300
             }
         },
         "dataset": {

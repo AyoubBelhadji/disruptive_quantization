@@ -52,11 +52,12 @@ def scipy_int(Z, fun, t1, nt, method):
     inplace scipy integration
     """
     sol = solve_ivp(fun, (0, t1), Z, t_eval=(t1,), method=method)
-    Z[:] = sol.y
+    # print(f'sol.shape {sol.y.shape} Z.shape {Z.shape}')
+    Z[:] = sol.y.reshape(-1)
 
 
 class GradientFlowIntegrator:
-    def __init__(self, method="rk4"):
+    def __init__(self, method="RK4"):
         self.method = method
         if method == "RK4":
             self.integrator = rk4

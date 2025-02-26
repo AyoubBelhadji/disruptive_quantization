@@ -105,6 +105,9 @@ def categorize_params(config, function_map):
     rng_seed = config.get('rng_seed',None)
     params['rng'] = np.random.default_rng(rng_seed)
     params['rng_seed'] = rng_seed
+    init_rng_seed = config.get('initialization_seed', None)
+    init_rng = params['rng'] if init_rng_seed is None else np.random.default_rng(init_rng_seed)
+    params['initialization_rng'] = init_rng
 
     # Load any constant hyperparameters
     hyperparams = config['params'].get('hyperparams', {})
@@ -135,7 +138,7 @@ def categorize_params(config, function_map):
     params.update(intial_distribution_params)
 
     params['initial_distribution'] = initial_distribution_class(
-        intial_distribution_params, params.get('rng'))
+        intial_distribution_params, params.get('initialization_rng'))
 
     kernel_info = config['params'].get('kernel', {})
     kernel_params = kernel_info.get('params', {})

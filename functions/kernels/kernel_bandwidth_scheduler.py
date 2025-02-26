@@ -38,12 +38,12 @@ class KernelBandwidthScheduler(ABC):
         """ Reset the schedule to the initial state """
         self.iter = 0
         bandwidth = self.reset_bandwidth()
-        self.kernel_constructor(bandwidth, **self.kernel_params)
+        self.KernelConstructor(bandwidth)
 
     def IncrementSchedule(self):
         """ Change kernel according to the current iteration """
         bandwidth = self.get_bandwidth()
-        self.kernel_constructor(bandwidth, **self.kernel_params)
+        self.KernelConstructor(bandwidth)
         self.iter += 1
 
     def KernelConstructor(self, bandwidth):

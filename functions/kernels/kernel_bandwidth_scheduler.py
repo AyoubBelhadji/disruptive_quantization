@@ -34,10 +34,16 @@ class KernelBandwidthScheduler(ABC):
         self.kernel_params = kernel_params.copy()
         self.kernel_params.pop("bandwidth", None)
 
+    def ResetSchedule(self):
+        """ Reset the schedule to the initial state """
+        self.iter = 0
+        bandwidth = self.reset_bandwidth()
+        self.KernelConstructor(bandwidth)
+
     def IncrementSchedule(self):
         """ Change kernel according to the current iteration """
         bandwidth = self.get_bandwidth()
-        self.KernelConstructor(bandwidth, **self.kernel_params)
+        self.KernelConstructor(bandwidth)
         self.iter += 1
 
     def KernelConstructor(self, bandwidth):
@@ -62,6 +68,12 @@ class KernelBandwidthScheduler(ABC):
         assert False
         pass
 
+    @abstractmethod
+    def reset_bandwidth(self):
+        """ Reset the bandwidth to the initial value """
+        assert False
+        pass
+
 
 class ConstantKernelBandwidth(KernelBandwidthScheduler):
     """ Constant kernel bandwidth """
@@ -72,6 +84,12 @@ class ConstantKernelBandwidth(KernelBandwidthScheduler):
 
     def IncrementSchedule(self):
         pass
+
+    def ResetSchedule(self):
+        pass
+
+    def reset_bandwidth(self):
+        return self.bandwidth
 
     def get_bandwidth(self):
         return self.bandwidth
@@ -93,3 +111,6 @@ class ExponentialDecayKernelBandwidth(KernelBandwidthScheduler):
 
     def get_bandwidth(self):
         return self.bandwidth_end_value + (self.bandwidth_start_value - self.bandwidth_end_value) * np.exp(self.bandwidth_decay_rate * self.iter)
+
+    def reset_bandwidth(self):
+        return self.bandwidth_start_value

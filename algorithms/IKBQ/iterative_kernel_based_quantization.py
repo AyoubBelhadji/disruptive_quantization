@@ -23,7 +23,6 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.R = params.get('R')
         self.T = params.get('T')
         self.K = params.get('K')
-        self.M = params.get('K')
         self.d = params.get('d')
         self.N = params.get('N')
         self.data_array = None
@@ -65,7 +64,6 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         c_0_array = self.initial_distribution.generate_samples(self.K, self.data_array)
 
         for r in range(self.R):
-            self.kernel_scheduler.IncrementSchedule()
             if self.freeze_init:
                 self.y_trajectory[r, 0, :, :] = c_0_array
             else:
@@ -74,8 +72,9 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
 
             self.w_trajectory[r, 0, :] = self.calculate_weights(
                 self.y_trajectory[r, 0, :, :], 0, np.ones(self.K)/self.K)
-
+            self.kernel_scheduler.ResetSchedule()
             for t in tqdm(range(self.T - 1), position=0):
+                self.kernel_scheduler.IncrementSchedule()
                 c_t = self.y_trajectory[r, t, :, :]
                 w_t = self.w_trajectory[r, t, :]
                 c_t_plus_1 = self.calculate_centroids(c_t, t, w_t)

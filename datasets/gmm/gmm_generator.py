@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import pickle
 
+
+
 def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, seed=None):
     """
     Generate data from a d-dimensional Gaussian Mixture Model and optionally save it to a pickle file.
@@ -31,14 +33,15 @@ def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, s
         Parameters used to generate the data.
     """
     rng = np.random.default_rng(seed)
+    
     if params is None:
         # Randomly generate weights, means, and covariances
         weights = rng.dirichlet(np.ones(n_components))
-        means = rng.randn(n_components, d) * 5
+        means = rng.standard_normal((n_components, d)) * 5
         covariances = np.zeros((n_components, d, d))
         for i in range(n_components):
-            A = rng.randn(d, d)
-            covariances[i] = np.dot(A, A.T) + np.eye(d)  # Ensure positive-definite
+            A = rng.standard_normal((d, d))
+            covariances[i] = A @ A.T + np.eye(d)  # Ensure positive-definite
         params = {'weights': weights, 'means': means, 'covariances': covariances}
     else:
         weights = params['weights']
@@ -49,6 +52,7 @@ def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, s
     component_samples = rng.choice(n_components, size=n_samples, p=weights)
     data = np.zeros((n_samples, d))
     labels = component_samples.copy()
+    
     for i in range(n_components):
         idx = component_samples == i
         num_samples = np.sum(idx)
@@ -62,6 +66,65 @@ def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, s
         print(f"Data saved to {save_path}")
 
     return data, labels, params
+
+
+# def generate_gmm_data(d, n_samples, n_components, params=None, save_path=None, seed=None):
+#     """
+#     Generate data from a d-dimensional Gaussian Mixture Model and optionally save it to a pickle file.
+
+#     Parameters:
+#     - d: int
+#         Dimension of the data.
+#     - n_samples: int
+#         Total number of samples to generate.
+#     - n_components: int
+#         Number of Gaussian components in the mixture.
+#     - params: dict or None
+#         Parameters of the GMM. If None, random parameters are generated.
+#         Should contain 'weights', 'means', and 'covariances'.
+#     - save_path: str or None
+#         If provided, the generated data and parameters are saved to this path as a pickle file.
+
+#     Returns:
+#     - data: ndarray of shape (n_samples, d)
+#         Generated data points.
+#     - labels: ndarray of shape (n_samples,)
+#         Component labels for each data point.
+#     - params: dict
+#         Parameters used to generate the data.
+#     """
+#     rng = np.random.default_rng(seed)
+#     if params is None:
+#         # Randomly generate weights, means, and covariances
+#         weights = rng.dirichlet(np.ones(n_components))
+#         means = rng.randn(n_components, d) * 5
+#         covariances = np.zeros((n_components, d, d))
+#         for i in range(n_components):
+#             A = rng.randn(d, d)
+#             covariances[i] = np.dot(A, A.T) + np.eye(d)  # Ensure positive-definite
+#         params = {'weights': weights, 'means': means, 'covariances': covariances}
+#     else:
+#         weights = params['weights']
+#         means = params['means']
+#         covariances = params['covariances']
+
+#     # Generate samples for each component
+#     component_samples = rng.choice(n_components, size=n_samples, p=weights)
+#     data = np.zeros((n_samples, d))
+#     labels = component_samples.copy()
+#     for i in range(n_components):
+#         idx = component_samples == i
+#         num_samples = np.sum(idx)
+#         if num_samples > 0:
+#             data[idx] = rng.multivariate_normal(means[i], covariances[i], num_samples)
+
+#     # Save to pickle file if save_path is provided
+#     if save_path is not None:
+#         with open(save_path, 'wb') as f:
+#             pickle.dump({'data': data, 'labels': labels, 'params': params}, f)
+#         print(f"Data saved to {save_path}")
+
+#     return data, labels, params
 
 def plot_gmm_data(data, labels=None, means=None, covariances=None):
     """
@@ -120,9 +183,11 @@ def plot_cov_ellipse(cov, mean, nstd=2, **kwargs):
 # Example usage when running the module directly
 if __name__ == "__main__":
     d = 2
-    n_samples = 1000
-    n_components = 3
-    save_path = 'data.pkl'  # Specify the filename to save the data
-    data, labels, params = generate_gmm_data(d, n_samples, n_components, save_path=save_path, seed=1234)
+    n_samples = 10000
+    n_components = 5
+    seed = 16
+    save_path = None
+    #'data.pkl'  # Specify the filename to save the data
+    data, labels, params = generate_gmm_data(d, n_samples, n_components, save_path=save_path, seed=seed)
     plot_gmm_data(data, labels, params['means'], params['covariances'])
 

@@ -1,0 +1,43 @@
+{
+    "rng_seed": 1823,
+    "algorithm_name": "WassersteinFisherRao",
+    "params": {
+        "solution": {
+            "K": 10
+        },
+        "hyperparams": {
+            "point_accelerator": 50,
+            "ODE_solver": "RK23"
+        },
+        "initial_distribution": {
+            "distribution_name": "gaussian_distribution",
+            "params": {
+                "d": 2,
+                "mean": [0.98, 0.68],
+                "covariance": [[0.025,0.0],[0.0,0.025]]
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "T": 1000
+        },
+        "time_parameterization": {
+            "time_discretization_name": "linear_time_parameterization",
+            "params": {
+                "end_time": 2000
+            }
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 0.6
+            }
+        },
+        "dataset": {
+            "N": 5000,
+            "dataset_name": "joker"
+        }
+    }
+}

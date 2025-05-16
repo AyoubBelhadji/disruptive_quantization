@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on 11/22/2024 17:40:25
-@author: dannys4
-"""
 
 from abc import ABC, abstractmethod
 import numpy as np

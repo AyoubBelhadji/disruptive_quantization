@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on 25/25/2525 25:25:25
-Also created on Mon Nov 26 11:22:00 2024
-@author: dannys4
-"""
 
 import numpy as np
 

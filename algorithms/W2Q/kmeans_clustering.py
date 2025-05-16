@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Nov  25 11:37:45 2024
-
-@author: dannys4
-"""
 
 from algorithms.base_algorithm import AbstractAlgorithm
 import numpy as np

@@ -253,7 +253,7 @@ parser.add_argument(
     "--dir",
     help="Configuration subdirectory in ./ or ./experiment_configs",
     type=str,
-    default="examples",
+    default="joker",
 )
 parser.add_argument("-r", "--results", help="Calculate results", action="store_true")
 parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
@@ -262,7 +262,8 @@ parser.add_argument("--debug", help="Turn on debug mode", action="store_true")
 if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
-    plot_gif = args.gif
+    plot_gif = True
+    #args.gif
     plot_mmd = args.mmd
     plot_nns = args.neighbors
     show_plots = args.plots

@@ -1,0 +1,34 @@
+{
+    "rng_seed": 1823,
+    "algorithm_name": "MeanShift",
+    "params": {
+        "solution": {
+            "K": 10,
+            "freeze_init": 0
+        },
+        "initial_distribution": {
+            "distribution_name": "gaussian_distribution",
+            "params": {
+                "d": 2,
+                "mean": [0.98, 0.68],
+                "covariance": [[0.025,0.0],[0.0,0.025]]
+            }
+        },
+        "experience": {
+            "R": 1
+        },
+        "optimization": {
+            "T": 1000,
+            "step_size": 0.5
+        },
+        "kernel": {
+            "kernel_name": "gaussian_kernel",
+            "params": {
+                "bandwidth": 0.6
+            }
+        },
+        "dataset": {
+            "dataset_name": "joker"
+        }
+    }
+}

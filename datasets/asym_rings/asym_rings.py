@@ -11,5 +11,7 @@ def asym_rings(N_samp_per: int, ring_std: float = 0.05):
 
 if __name__ == '__main__':
     labels, rings = asym_rings(500)
+    perm = np.random.permutation(len(labels))
+    labels, rings = labels[perm], rings[perm]
     with open('data.pkl', 'wb') as f:
         pickle.dump({'data': rings, 'labels': labels}, f)

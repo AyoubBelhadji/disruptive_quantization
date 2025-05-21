@@ -20,7 +20,6 @@ def create_dynamics_gif(data_array, centroids, r, alg_name, file_format, subpath
     alpha_data = min(0.5, max(15/N_data,1))
     fig, ax = plt.subplots()
     ax.set(**ax_kwargs)
-    ax.set_aspect('equal')
     ax.scatter(data_array[:, 0], data_array[:, 1], color='black', alpha=alpha_data)
     ax.scatter(centroids[0, :, 0], centroids[0, :, 1], color='red',
                label='Initial Centroids', alpha=1, marker='D')
@@ -67,10 +66,8 @@ def centroid_dynamics(alg_name, y_trajectory, data_array, subpath, file_format="
         data_array[:, 1]), limit_margin)
     ylims_centroids = expand_limits(np.min(y_trajectory[:, :, :, 1]), np.max(
         y_trajectory[:, :, :, 1]), limit_margin)
-    # xlims = (min(xlims_data[0], xlims_centroids[0]), max(xlims_data[1], xlims_centroids[1]))
-    # ylims = (min(ylims_data[0], ylims_centroids[0]), max(ylims_data[1], ylims_centroids[1]))
-    xlims = (-4, 4)
-    ylims = (-4, 4)
+    xlims = (min(xlims_data[0], xlims_centroids[0]), max(xlims_data[1], xlims_centroids[1]))
+    ylims = (min(ylims_data[0], ylims_centroids[0]), max(ylims_data[1], ylims_centroids[1]))
     for r in range(R):
         centroids_r = y_trajectory[r]
         create_dynamics_gif(data_array, centroids_r, r, alg_name, file_format, subpath, xlim=xlims, ylim=ylims)

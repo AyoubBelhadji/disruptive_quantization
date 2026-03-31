@@ -7,6 +7,8 @@ from abc import abstractmethod
 import numpy as np
 from tqdm import tqdm
 
+from functions.kernels.kernel_bandwidth_scheduler import ConstantKernelBandwidth
+
 
 class IterativeKernelBasedQuantization(AbstractAlgorithm):
     def __init__(self, params):
@@ -21,6 +23,10 @@ class IterativeKernelBasedQuantization(AbstractAlgorithm):
         self.N = params.get('N')
         self.data_array = None
         self.kernel_scheduler = params.get('kernel')
+        if isinstance(self.kernel_scheduler, ConstantKernelBandwidth):
+            self.kernel = self.kernel_scheduler.GetKernelInstance()
+        else:
+            self.kernel = None
         self.initial_distribution = params.get('initial_distribution')
         self.freeze_init = params.get('freeze_init', False)
 

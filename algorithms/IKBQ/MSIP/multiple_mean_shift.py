@@ -136,7 +136,10 @@ class MultipleMeanShift(IterativeKernelBasedQuantization):
         x_array = self.data_array
 
         # Get the kernel and prekernel functions
-        kernel = self.kernel_scheduler.GetKernelInstance()
+        if self.kernel is None:
+            kernel = self.kernel_scheduler.GetKernelInstance()
+        else:
+            kernel = self.kernel
 
         K_matrix = broadcast_kernel(kernel.kernel, c_array, c_array)
 

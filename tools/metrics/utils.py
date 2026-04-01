@@ -3,7 +3,7 @@ import pickle
 from tools import metrics
 import numpy as np
 import numba as nb
-
+from numba_progress import ProgressBar
 
 def calculate_mmd_and_logdets(y_array, w_array, data_array, kernel, mmd_self, subpath):
     mmd_folder_serial = os.path.join("experiments", "sandbox", subpath)
@@ -30,7 +30,7 @@ def get_data_mmd(data, kernel, mmd_self, kernel_eval):
 
 
 @nb.jit(parallel=True)
-def calcluate_all_metrics_impl(all_nodes, all_node_weights, data, kernel, data_mmd):
+def calcluate_all_metrics_impl(all_nodes, all_node_weights, data, kernel, data_mmd, prog_proxy):
     mmds = np.zeros(len(all_nodes))
     logdets = np.zeros(len(all_nodes))
     haussdorffs = np.zeros(len(all_nodes))
@@ -45,6 +45,7 @@ def calcluate_all_metrics_impl(all_nodes, all_node_weights, data, kernel, data_m
         logdets[i] = metrics.logdet(Y, kernel)
         haussdorffs[i] = metrics.hausdorff_distance(Y, data)
         voronoi_mses[i] = metrics.voronoi_mse(Y, data)
+        prog_proxy.update(1)
     return mmds, logdets, haussdorffs, voronoi_mses
 
 
@@ -55,10 +56,10 @@ def calculate_all_metrics(alg_name, y_array, w_array, data, kernel, mmd_self, su
     all_node_weights = w_array.reshape(-1, w_array.shape[-1])
     kernel_eval = kernel.kernel
     data_mmd = get_data_mmd(data, kernel, mmd_self, kernel_eval)
-
-    all_metrics = calcluate_all_metrics_impl(
-        all_nodes, all_node_weights, data, kernel_eval, data_mmd
-    )
+    with ProgressBar(total=len(all_nodes)) as progress:
+        all_metrics = calcluate_all_metrics_impl(
+            all_nodes, all_node_weights, data, kernel_eval, data_mmd, progress
+        )
     all_metrics_dict = {
         "mmd": all_metrics[0],
         "logdet": all_metrics[1],
